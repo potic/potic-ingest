@@ -7,7 +7,7 @@ import org.springframework.web.bind.annotation.ResponseBody
 import org.springframework.web.bind.annotation.RestController
 import org.springframework.web.client.RestTemplate
 
-@RestController('/articles')
+@RestController()
 @Slf4j
 class ArticlesController {
 
@@ -17,21 +17,21 @@ class ArticlesController {
 
     JsonSlurper jsonSlurper = new JsonSlurper()
 
-    @GetMapping(path = '/')
+    @GetMapping(path = '/articles')
     @ResponseBody Collection<Article> all() {
         log.info 'Receive request to GET all articles'
 
         allArticles()
     }
 
-    @GetMapping(path = '/unread')
+    @GetMapping(path = '/articles/unread')
     @ResponseBody Collection<Article> unread() {
         log.info 'Receive request to GET unread articles'
 
         allArticles().findAll({ !it.read })
     }
 
-    @GetMapping(path = '/read')
+    @GetMapping(path = '/articles/read')
     @ResponseBody Collection<Article> read() {
         log.info 'Receive request to GET read articles'
 
