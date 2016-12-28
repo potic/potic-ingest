@@ -2,7 +2,7 @@
 
 Microservice for retrieving list of articles.
 
-TravisCI - https://travis-ci.org/pocket-square/pocket-square-ingest/
+TravisCI - https://travis-ci.org/pocket-square/pocket-square-articles/
 
 DockerHub - https://hub.docker.com/r/pocketsquare/pocket-square-articles/
 
