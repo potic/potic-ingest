@@ -12,6 +12,7 @@ DockerHub - https://hub.docker.com/r/pocketsquare/pocket-square-articles/
 ----
 mkdir /logs
 
+docker rm pocket_square_articles
 docker ps # to determine if container is already running
 docker kill $CONTAINER_ID # if needed
 
