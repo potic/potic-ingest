@@ -41,13 +41,13 @@ class ArticlesController {
     Collection<Article> allArticles() {
         String ingestAsString = restTemplate.getForObject(INGEST_URL, String)
         def ingestAsJson = jsonSlurper.parseText(ingestAsString)
-        Collection<Article> articles = ingestAsJson.findAll({ it.is_article == '1' }).collect({
+        Collection<Article> articles = ingestAsJson.values().findAll({ it.is_article == '1' }).collect({
             Article.builder()
                     .url(it.given_url)
-                    .title(it.resolved_url)
+                    .title(it.resolved_title)
                     .order(it.sort_id)
-                    .favorite(it.favorite == '1')
                     .read(it.status == '1')
+                    .favorite(it.favorite == '1')
                     .excerpt(it.excerpt)
                     .wordCount(Integer.parseInt(it.word_count))
                     .tags(it.tags?.keySet()?:[])
