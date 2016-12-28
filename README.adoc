@@ -16,5 +16,5 @@ docker ps # to determine if container is already running
 docker kill $CONTAINER_ID # if needed
 
 docker pull pocketsquare/pocket-square-articles:$TAG # to load specific image
-docker run -dit -v /logs:/logs -p 8080:8080 pocketsquare/pocket-square-articles:$TAG # to start specific image
+docker run -dit -v /logs:/logs -p 8080:8080 --name pocket-square-articles pocketsquare/pocket-square-articles:$TAG # to start specific image
 ----

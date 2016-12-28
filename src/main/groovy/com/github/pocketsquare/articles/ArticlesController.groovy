@@ -7,11 +7,11 @@ import org.springframework.web.bind.annotation.ResponseBody
 import org.springframework.web.bind.annotation.RestController
 import org.springframework.web.client.RestTemplate
 
-@RestController()
+@RestController
 @Slf4j
 class ArticlesController {
 
-    static final String INGEST_URL = 'http://188.166.150.255:5000/fetch'
+    static final String INGEST_URL = 'http://pocket-square-ingest:5000/fetch'
 
     RestTemplate restTemplate = new RestTemplate()
 
