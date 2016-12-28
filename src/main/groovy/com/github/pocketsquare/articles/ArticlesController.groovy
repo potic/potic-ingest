@@ -11,7 +11,7 @@ import org.springframework.web.client.RestTemplate
 @Slf4j
 class ArticlesController {
 
-    static final String INGEST_URL = 'http://pocket-square-ingest:5000/fetch'
+    static final String INGEST_URL = 'pocket_square_ingest:5000/fetch'
 
     RestTemplate restTemplate = new RestTemplate()
 
