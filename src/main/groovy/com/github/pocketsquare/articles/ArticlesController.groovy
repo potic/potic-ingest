@@ -11,7 +11,7 @@ import org.springframework.web.client.RestTemplate
 @Slf4j
 class ArticlesController {
 
-    static final String INGEST_URL = '/ingest'
+    static final String INGEST_URL = 'http://188.166.150.255:5000/fetch'
 
     RestTemplate restTemplate = new RestTemplate()
 
