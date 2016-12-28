@@ -11,7 +11,6 @@ class Article {
     String title
     boolean read
     boolean favorite
-    String excerpt
     Integer wordCount
     Integer order
     Collection<String> tags

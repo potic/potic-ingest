@@ -48,7 +48,6 @@ class ArticlesController {
                     .order(it.sort_id)
                     .read(it.status == '1')
                     .favorite(it.favorite == '1')
-                    .excerpt(it.excerpt)
                     .wordCount(Integer.parseInt(it.word_count))
                     .tags(it.tags?.keySet()?:[])
                     .authors(it.authors?.values()?.collect({ it.name })?:[])
