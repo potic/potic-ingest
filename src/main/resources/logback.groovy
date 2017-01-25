@@ -1,3 +1,4 @@
+import ch.qos.logback.classic.Level
 import ch.qos.logback.classic.encoder.PatternLayoutEncoder
 import ch.qos.logback.core.ConsoleAppender
 import ch.qos.logback.core.rolling.RollingFileAppender
@@ -21,4 +22,8 @@ appender('FILE', RollingFileAppender) {
     }
 }
 
-logger('com.github.pocketsquare', INFO, [ 'STDOUT', 'FILE' ])
+String POCKET_SQUARE_LOG_LEVEL = System.getenv('POCKET_SQUARE_LOG_LEVEL') ?: 'INFO'
+String ROOT_LOG_LEVEL = System.getenv('ROOT_LOG_LEVEL') ?: 'INFO'
+
+root(Level.toLevel(ROOT_LOG_LEVEL), ['STDOUT', 'FILE' ])
+logger('com.github.pocketsquare', Level.toLevel(POCKET_SQUARE_LOG_LEVEL), [ 'STDOUT', 'FILE' ], false)

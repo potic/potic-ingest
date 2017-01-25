@@ -3,6 +3,7 @@ package com.github.pocketsquare.articles
 import groovy.json.JsonSlurper
 import groovy.util.logging.Slf4j
 import org.springframework.web.bind.annotation.GetMapping
+import org.springframework.web.bind.annotation.PathVariable
 import org.springframework.web.bind.annotation.ResponseBody
 import org.springframework.web.bind.annotation.RestController
 import org.springframework.web.client.RestTemplate
@@ -11,35 +12,35 @@ import org.springframework.web.client.RestTemplate
 @Slf4j
 class ArticlesController {
 
-    static final String INGEST_URL = 'http://pocket_square_ingest:5000/fetch'
+    static final String INGEST_URL = 'http://pocket_square_ingest:28102/fetch/'
 
     RestTemplate restTemplate = new RestTemplate()
 
     JsonSlurper jsonSlurper = new JsonSlurper()
 
-    @GetMapping(path = '/articles')
-    @ResponseBody Collection<Article> all() {
+    @GetMapping(path = '/articles/{userId}')
+    @ResponseBody Collection<Article> all(@PathVariable Integer userId) {
         log.info 'Receive request to GET all articles'
 
-        allArticles()
+        allArticles(userId)
     }
 
-    @GetMapping(path = '/articles/unread')
-    @ResponseBody Collection<Article> unread() {
+    @GetMapping(path = '/articles/{userId}/unread')
+    @ResponseBody Collection<Article> unread(@PathVariable Integer userId) {
         log.info 'Receive request to GET unread articles'
 
-        allArticles().findAll({ !it.read })
+        allArticles(userId).findAll({ !it.read })
     }
 
-    @GetMapping(path = '/articles/read')
-    @ResponseBody Collection<Article> read() {
+    @GetMapping(path = '/articles/{userId}/read')
+    @ResponseBody Collection<Article> read(@PathVariable Integer userId) {
         log.info 'Receive request to GET read articles'
 
-        allArticles().findAll({ it.read })
+        allArticles(userId).findAll({ it.read })
     }
 
-    Collection<Article> allArticles() {
-        String ingestAsString = restTemplate.getForObject(INGEST_URL, String)
+    Collection<Article> allArticles(Integer userId) {
+        String ingestAsString = restTemplate.getForObject("${INGEST_URL}${userId}", String)
         def ingestAsJson = jsonSlurper.parseText(ingestAsString)
         Collection<Article> articles = ingestAsJson.values().findAll({ it.is_article == '1' }).collect({
             Article.builder()

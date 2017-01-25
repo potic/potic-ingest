@@ -6,16 +6,8 @@ TravisCI - https://travis-ci.org/pocket-square/pocket-square-articles/
 
 DockerHub - https://hub.docker.com/r/pocketsquare/pocket-square-articles/
 
-== HOWTO: start with docker
+== Documentation
 
-[source,shell]
-----
-mkdir /logs
+link:src/docs/howto-start-docker.adoc[HOWTO: start service as docker container]
 
-docker rm pocket_square_articles
-docker ps # to determine if container is already running
-docker kill $CONTAINER_ID # if needed
-
-docker pull pocketsquare/pocket-square-articles:$TAG # to load specific image
-docker run -dit -v /logs:/logs -p 8080:8080 --name pocket_square_articles --link pocket_square_ingest pocketsquare/pocket-square-articles:$TAG # to start specific image
-----
+link:src/docs/howto-run-service.adoc[HOWTO: run service]
