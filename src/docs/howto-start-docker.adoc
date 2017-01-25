@@ -19,5 +19,5 @@ POCKET_SQUARE_LOG_LEVEL - logging level for service code (default is INFO)
 [source,shell]
 ----
 docker pull pocketsquare/pocket-square-articles:$TAG
-docker run -dit --name pocket_square_articles --link pocket_square_ingest -v /logs:/logs -e MONGO_PASSWORD=$MONGODB_PASSWORD -p 28103:8080 pocketsquare/pocket-square-articles:$TAG
+docker run -dit --name pocket_square_articles --link pocket_square_ingest -v /logs:/logs -p 28103:8080 pocketsquare/pocket-square-articles:$TAG
 ----
