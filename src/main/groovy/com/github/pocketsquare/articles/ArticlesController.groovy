@@ -19,27 +19,27 @@ class ArticlesController {
     JsonSlurper jsonSlurper = new JsonSlurper()
 
     @GetMapping(path = '/articles/{userId}')
-    @ResponseBody Collection<Article> all(@PathVariable Integer userId) {
+    @ResponseBody Collection<Article> all(@PathVariable String userId) {
         log.info 'Receive request to GET all articles'
 
         allArticles(userId)
     }
 
     @GetMapping(path = '/articles/{userId}/unread')
-    @ResponseBody Collection<Article> unread(@PathVariable Integer userId) {
+    @ResponseBody Collection<Article> unread(@PathVariable String userId) {
         log.info 'Receive request to GET unread articles'
 
         allArticles(userId).findAll({ !it.read })
     }
 
     @GetMapping(path = '/articles/{userId}/read')
-    @ResponseBody Collection<Article> read(@PathVariable Integer userId) {
+    @ResponseBody Collection<Article> read(@PathVariable String userId) {
         log.info 'Receive request to GET read articles'
 
         allArticles(userId).findAll({ it.read })
     }
 
-    Collection<Article> allArticles(Integer userId) {
+    Collection<Article> allArticles(String userId) {
         String ingestAsString = restTemplate.getForObject("${INGEST_URL}${userId}", String)
         def ingestAsJson = jsonSlurper.parseText(ingestAsString)
         Collection<Article> articles = ingestAsJson.values().findAll({ it.is_article == '1' }).collect({
