@@ -1,7 +1,10 @@
-package com.github.pocketsquare.articles
+package com.github.pocketsquare.articles.controller
 
+import com.github.pocketsquare.articles.domain.Article
+import com.github.pocketsquare.articles.repository.ArticleRepository
 import groovy.json.JsonSlurper
 import groovy.util.logging.Slf4j
+import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.web.bind.annotation.GetMapping
 import org.springframework.web.bind.annotation.PathVariable
 import org.springframework.web.bind.annotation.ResponseBody
@@ -18,32 +21,22 @@ class ArticlesController {
 
     JsonSlurper jsonSlurper = new JsonSlurper()
 
-    @GetMapping(path = '/articles/{userId}')
-    @ResponseBody Collection<Article> all(@PathVariable String userId) {
-        log.info 'Receive request to GET all articles'
+    @Autowired
+    ArticleRepository articleRepository
 
-        allArticles(userId)
+    @GetMapping(path = '/article/save/{userId}')
+    @ResponseBody Collection<Article> save(@PathVariable String userId) {
+        log.info 'Receive request to save articles to database'
+
+        articleRepository.save(fetchArticles(userId))
     }
 
-    @GetMapping(path = '/articles/{userId}/unread')
-    @ResponseBody Collection<Article> unread(@PathVariable String userId) {
-        log.info 'Receive request to GET unread articles'
-
-        allArticles(userId).findAll({ !it.read })
-    }
-
-    @GetMapping(path = '/articles/{userId}/read')
-    @ResponseBody Collection<Article> read(@PathVariable String userId) {
-        log.info 'Receive request to GET read articles'
-
-        allArticles(userId).findAll({ it.read })
-    }
-
-    Collection<Article> allArticles(String userId) {
+    Collection<Article> fetchArticles(String userId) {
         String ingestAsString = restTemplate.getForObject("${INGEST_URL}${userId}", String)
         def ingestAsJson = jsonSlurper.parseText(ingestAsString)
         Collection<Article> articles = ingestAsJson.values().findAll({ it.is_article == '1' }).collect({
             Article.builder()
+                    .userId(userId)
                     .url(it.given_url)
                     .title(it.resolved_title)
                     .order(it.sort_id)

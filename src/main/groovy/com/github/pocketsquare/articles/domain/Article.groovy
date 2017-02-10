@@ -1,11 +1,15 @@
-package com.github.pocketsquare.articles
+package com.github.pocketsquare.articles.domain
 
-import groovy.transform.ToString
 import groovy.transform.builder.Builder
+import org.springframework.data.annotation.Id
 
 @Builder
-@ToString(includeNames = true)
 class Article {
+
+    @Id
+    String id
+
+    String userId
 
     String url
     String title
