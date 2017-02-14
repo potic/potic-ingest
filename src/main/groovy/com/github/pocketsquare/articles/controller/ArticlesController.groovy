@@ -17,9 +17,8 @@ import org.springframework.web.client.RestTemplate
 @Slf4j
 class ArticlesController {
 
-    HttpBuilder pocketSquareIngest = HttpBuilder.configure {
-        request.uri = 'http://pocket_square_ingest:5000/'
-    }
+    @Autowired
+    HttpBuilder pocketSquareIngest
 
     @Autowired
     ArticleRepository articleRepository
@@ -38,6 +37,7 @@ class ArticlesController {
         def fetchedByUserId = pocketSquareIngest.get() {
             request.uri.path = "/fetch/${userId}"
         }
+
         Collection<Article> articles = fetchedByUserId.values().findAll({ it.is_article == '1' }).collect({
             Article.builder()
                     .userId(userId)
