@@ -18,7 +18,7 @@ import org.springframework.web.client.RestTemplate
 class ArticlesController {
 
     HttpBuilder pocketSquareIngest = HttpBuilder.configure {
-        request.uri = 'http://pocket_square_ingest:5000'
+        request.uri = 'http://pocket_square_ingest:5000/'
     }
 
     @Autowired
