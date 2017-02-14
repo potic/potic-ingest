@@ -2,11 +2,7 @@
 
 == Endpoints
 
-GET to http://<host>:<port>/articles/{userId} - all articles of user
-
-GET to http://<host>:<port>/articles/{userId}/unread - all articles that user has not read yet
-
-GET to http://<host>:<port>/articles/{userId}/read - all articles of user has aready read
+?
 
 == Service locations
 

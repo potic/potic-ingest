@@ -4,6 +4,7 @@ import com.github.pocketsquare.articles.domain.Article
 import com.github.pocketsquare.articles.repository.ArticleRepository
 import groovy.json.JsonSlurper
 import groovy.util.logging.Slf4j
+import org.jsoup.Jsoup
 import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.web.bind.annotation.GetMapping
 import org.springframework.web.bind.annotation.PathVariable
@@ -23,6 +24,13 @@ class ArticlesController {
 
     @Autowired
     ArticleRepository articleRepository
+
+    @GetMapping(path = '/article/clean')
+    @ResponseBody Collection<Article> clean() {
+        log.info 'Receive request to save articles to database'
+
+        articleRepository.deleteAll()
+    }
 
     @GetMapping(path = '/article/save/{userId}')
     @ResponseBody Collection<Article> save(@PathVariable String userId) {
@@ -45,6 +53,7 @@ class ArticlesController {
                     .wordCount(Integer.parseInt(it.word_count))
                     .tags(it.tags?.keySet()?:[])
                     .authors(it.authors?.values()?.collect({ it.name })?:[])
+                    .content(Jsoup.connect(it.resolved_url).get().html())
                     .build()
         })
 

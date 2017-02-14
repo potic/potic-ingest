@@ -19,4 +19,6 @@ class Article {
     Integer order
     Collection<String> tags
     Collection<String> authors
+
+    String content
 }
