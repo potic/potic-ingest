@@ -72,10 +72,4 @@ class ArticlesController {
             articleRepository.save article
         }
     }
-
-    Collection<Article> fetchArticles(String userId) {
-
-
-        return articles
-    }
 }
