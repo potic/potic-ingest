@@ -17,8 +17,11 @@ import org.springframework.web.client.RestTemplate
 @Slf4j
 class ArticlesController {
 
-    @Autowired
-    HttpBuilder pocketSquareIngest
+    static final String INGEST_URL = 'http://pocket_square_ingest:5000/fetch/'
+
+    RestTemplate restTemplate = new RestTemplate()
+
+    JsonSlurper jsonSlurper = new JsonSlurper()
 
     @Autowired
     ArticleRepository articleRepository
@@ -34,9 +37,8 @@ class ArticlesController {
     @ResponseBody Collection<Article> save(@PathVariable String userId) {
         log.info 'Receive request to save articles to database'
 
-        def fetchedByUserId = pocketSquareIngest.get() {
-            request.uri.path = "/fetch/${userId}"
-        }
+        String response = restTemplate.getForObject("${INGEST_URL}${userId}", String)
+        def fetchedByUserId = jsonSlurper.parseText(response)
 
         Collection<Article> articles = fetchedByUserId.values().findAll({ it.is_article == '1' }).collect({
             Article.builder()
