@@ -11,7 +11,8 @@ class Article {
 
     String userId
 
-    String url
+    String givenUrl
+    String resolvedUrl
     String title
     boolean read
     boolean favorite

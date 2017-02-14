@@ -4,6 +4,7 @@ import com.github.pocketsquare.articles.domain.Article
 import com.github.pocketsquare.articles.repository.ArticleRepository
 import groovy.json.JsonSlurper
 import groovy.util.logging.Slf4j
+import groovyx.net.http.HttpBuilder
 import org.jsoup.Jsoup
 import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.web.bind.annotation.GetMapping
@@ -16,11 +17,9 @@ import org.springframework.web.client.RestTemplate
 @Slf4j
 class ArticlesController {
 
-    static final String INGEST_URL = 'http://pocket_square_ingest:5000/fetch/'
-
-    RestTemplate restTemplate = new RestTemplate()
-
-    JsonSlurper jsonSlurper = new JsonSlurper()
+    HttpBuilder pocketSquareIngest = HttpBuilder.configure {
+        request.uri = 'http://pocket_square_ingest:5000'
+    }
 
     @Autowired
     ArticleRepository articleRepository
@@ -36,16 +35,14 @@ class ArticlesController {
     @ResponseBody Collection<Article> save(@PathVariable String userId) {
         log.info 'Receive request to save articles to database'
 
-        articleRepository.save(fetchArticles(userId))
-    }
-
-    Collection<Article> fetchArticles(String userId) {
-        String ingestAsString = restTemplate.getForObject("${INGEST_URL}${userId}", String)
-        def ingestAsJson = jsonSlurper.parseText(ingestAsString)
-        Collection<Article> articles = ingestAsJson.values().findAll({ it.is_article == '1' }).collect({
+        def fetchedByUserId = pocketSquareIngest.get() {
+            request.uri.path = "/fetch/${userId}"
+        }
+        Collection<Article> articles = fetchedByUserId.values().findAll({ it.is_article == '1' }).collect({
             Article.builder()
                     .userId(userId)
-                    .url(it.given_url)
+                    .givenUrl(it.given_url)
+                    .resolvedUrl(it.resolved_url)
                     .title(it.resolved_title)
                     .order(it.sort_id)
                     .read(it.status == '1')
@@ -53,9 +50,31 @@ class ArticlesController {
                     .wordCount(Integer.parseInt(it.word_count))
                     .tags(it.tags?.keySet()?:[])
                     .authors(it.authors?.values()?.collect({ it.name })?:[])
-                    .content(Jsoup.connect(it.resolved_url).get().html())
                     .build()
         })
+
+        articles.eachWithIndex { Article article, int index ->
+            log.info "processing article ${index + 1} / ${articles.size()}..."
+            try {
+                log.info "trying to load ${article.givenUrl}..."
+                article.content = Jsoup.connect(article.givenUrl).get().html()
+            } catch (e) {
+                log.warn "failed to load ${article.givenUrl}..."
+            }
+            if (article.content == null) {
+                try {
+                    log.info "trying to load ${article.resolvedUrl}..."
+                    article.content = Jsoup.connect(article.resolvedUrl).get().html()
+                } catch (e) {
+                    log.warn "failed to load ${article.resolvedUrl}..."
+                }
+            }
+            articleRepository.save article
+        }
+    }
+
+    Collection<Article> fetchArticles(String userId) {
+
 
         return articles
     }
