@@ -15,7 +15,7 @@ import org.springframework.web.client.RestTemplate
 
 @RestController
 @Slf4j
-class ArticlesController {
+class ArticlesStorageController {
 
     static final String INGEST_URL = 'http://pocket_square_ingest:5000/fetch/'
 
@@ -33,7 +33,7 @@ class ArticlesController {
         articleRepository.deleteAll()
     }
 
-    @GetMapping(path = '/article/save/{userId}')
+    @GetMapping(path = '/article/byUserId/{userId}/save')
     @ResponseBody Collection<Article> save(@PathVariable String userId) {
         log.info 'Receive request to save articles to database'
 
