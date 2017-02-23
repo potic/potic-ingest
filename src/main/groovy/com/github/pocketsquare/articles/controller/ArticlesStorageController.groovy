@@ -4,7 +4,6 @@ import com.github.pocketsquare.articles.domain.Article
 import com.github.pocketsquare.articles.repository.ArticleRepository
 import groovy.json.JsonSlurper
 import groovy.util.logging.Slf4j
-import groovyx.net.http.HttpBuilder
 import org.jsoup.Jsoup
 import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.web.bind.annotation.GetMapping
@@ -38,9 +37,9 @@ class ArticlesStorageController {
         log.info 'Receive request to save articles to database'
 
         String response = restTemplate.getForObject("${INGEST_URL}${userId}", String)
-        def fetchedByUserId = jsonSlurper.parseText(response)
+        Map fetchedByUserId = jsonSlurper.parseText(response)
 
-        Collection<Article> articles = fetchedByUserId.values().findAll({ it.is_article == '1' }).collect({
+        Collection<Article> articles = fetchedByUserId.values().take(20).findAll({ it.is_article == '1' }).collect({
             Article.builder()
                     .userId(userId)
                     .givenUrl(it.given_url)
