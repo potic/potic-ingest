@@ -6,5 +6,5 @@ import org.springframework.data.repository.PagingAndSortingRepository
 
 interface ArticleRepository extends PagingAndSortingRepository<Article, String> {
 
-    Collection<Article> findByUserId(String userId, Pageable pageable)
+    List<Article> findByUserId(String userId, Pageable pageable)
 }
