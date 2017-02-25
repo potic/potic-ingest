@@ -1,0 +1,62 @@
+= MongoDB setup
+
+== Cleaning previously started container
+
+[source,shell]
+----
+docker ps
+docker kill pocket_square_mongo; docker rm pocket_square_mongo
+----
+
+== Cleaning data
+
+[source,shell]
+----
+rm -rf /data/mongodb
+----
+
+== Start mongo
+
+[source,shell]
+----
+docker pull mongo:3.4.1
+docker run --name pocket_square_mongo -v /data/mongodb:/data/db -d mongo:3.4.1 --auth
+----
+
+== Add admin user
+
+[source,shell]
+----
+docker exec -it pocket_square_mongo mongo admin
+----
+
+[source,shell]
+.Execute in mongo shell
+----
+db.createUser({ user: 'pocketSquareAdmin', pwd: '$PASSWORD', roles: [ { role: "userAdminAnyDatabase", db: "admin" } ] });
+----
+
+== Add service user
+
+[source,shell]
+----
+docker run -it --rm --link pocket_square_mongo:mongo mongo:3.4.1 mongo -u pocketSquareAdmin -p $PASSWORD --authenticationDatabase admin pocket_square_mongo/admin
+----
+
+[source,shell]
+.Execute in mongo shell
+----
+db.createUser({ user: 'articlesService', pwd: '$PASSWORD', roles: [ { role: "readWriteAnyDatabase", db: "admin" } ] });
+----
+
+== Connect externally
+
+[source,shell]
+----
+docker run -it --rm --link pocket_square_mongo:mongo mongo:3.4.1 mongo -u pocketSquareAdmin -p $PASSWORD --authenticationDatabase admin pocket_square_mongo/admin
+----
+
+[source,shell]
+----
+docker run -it --rm --link pocket_square_mongo:mongo mongo:3.4.1 mongo -u articlesService -p $PASSWORD --authenticationDatabase admin pocket_square_mongo/vkIngested
+----

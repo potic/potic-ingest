@@ -6,8 +6,11 @@ import groovy.json.JsonSlurper
 import groovy.util.logging.Slf4j
 import org.jsoup.Jsoup
 import org.springframework.beans.factory.annotation.Autowired
+import org.springframework.web.bind.annotation.DeleteMapping
 import org.springframework.web.bind.annotation.GetMapping
 import org.springframework.web.bind.annotation.PathVariable
+import org.springframework.web.bind.annotation.PostMapping
+import org.springframework.web.bind.annotation.RequestParam
 import org.springframework.web.bind.annotation.ResponseBody
 import org.springframework.web.bind.annotation.RestController
 import org.springframework.web.client.RestTemplate
@@ -25,21 +28,21 @@ class ArticlesStorageController {
     @Autowired
     ArticleRepository articleRepository
 
-    @GetMapping(path = '/article/clean')
-    @ResponseBody Collection<Article> clean() {
+    @DeleteMapping(path = '/article')
+    @ResponseBody Collection<Article> removeAllArticles() {
         log.info 'Receive request to save articles to database'
 
         articleRepository.deleteAll()
     }
 
-    @GetMapping(path = '/article/byUserId/{userId}/save')
-    @ResponseBody Collection<Article> save(@PathVariable String userId) {
+    @PostMapping(path = '/article/byUserId/{userId}/ingest')
+    @ResponseBody Collection<Article> ingestArticlesByUserId(@PathVariable String userId, @RequestParam('maxArticlesCount') Integer maxArticlesCount) {
         log.info 'Receive request to save articles to database'
 
         String response = restTemplate.getForObject("${INGEST_URL}${userId}", String)
         Map fetchedByUserId = jsonSlurper.parseText(response)
 
-        Collection<Article> articles = fetchedByUserId.values().take(20).findAll({ it.is_article == '1' }).collect({
+        Collection<Article> articles = fetchedByUserId.values().findAll({ it.is_article == '1' }).collect({
             Article.builder()
                     .userId(userId)
                     .givenUrl(it.given_url)
@@ -53,6 +56,10 @@ class ArticlesStorageController {
                     .authors(it.authors?.values()?.collect({ it.name })?:[])
                     .build()
         })
+
+        if (maxArticlesCount != null) {
+            articles = articles.take(maxArticlesCount)
+        }
 
         articles.eachWithIndex { Article article, int index ->
             log.info "processing article ${index + 1} / ${articles.size()}..."

@@ -2,7 +2,12 @@
 
 == Endpoints
 
-?
+POST to http://<host>:<port>/article/byUserId/{userId}/ingest?maxArticlesCount={maxArticlesCount} - ingest `maxArticlesCount` of user with id=`userId` to database
+
+DELETE to http://<host>:<port>/article - remove all articles
+
+
+GET to http://<host>:<port>/article/byUserId/{userId}/unread - get unread articles of user with id=`userId`
 
 == Service locations
 
