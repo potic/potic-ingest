@@ -30,9 +30,11 @@ class ArticlesStorageController {
 
     @DeleteMapping(path = '/article')
     @ResponseBody Collection<Article> removeAllArticles() {
-        log.info 'Receive request to save articles to database'
+        log.info 'Receive request to remove all articles from database'
 
         articleRepository.deleteAll()
+
+        log.info "removing finished successfully"
     }
 
     @PostMapping(path = '/article/byUserId/{userId}/ingest')
@@ -79,5 +81,7 @@ class ArticlesStorageController {
             }
             articleRepository.save article
         }
+
+        log.info "ingestion finished successfully"
     }
 }
