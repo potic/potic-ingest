@@ -9,6 +9,7 @@ import groovyx.net.http.NativeHandlers
 import io.github.yermilov.kerivnyk.domain.Job
 import io.github.yermilov.kerivnyk.service.DurableJob
 import org.jsoup.Jsoup
+import org.jsoup.nodes.Document
 import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.stereotype.Service
 
@@ -46,11 +47,6 @@ class ArticlesStorageService {
             void init() {
                 ingestService = HttpBuilder.configure {
                     request.uri = INGEST_SERVICE_URL
-                    request.contentType =  'application/json'
-
-                    response.parser('application/json') { config, resp ->
-                        NativeHandlers.Parsers.json(config, resp).json
-                    }
                 }
 
                 requestSize = 10
@@ -65,13 +61,13 @@ class ArticlesStorageService {
             void act() {
                 log.info "requesting ${requestSize} articles for user with id=${userId} with offset=${offset}"
 
-                def jsonResponse = ingestService.get {
+                def response = ingestService.get {
                     request.uri.path = "/fetch/${userId}"
                     request.uri.query = [ count: requestSize, offset: offset ]
-                    request.contentType =  'application/json'
-
-                    response.parser('application/json', response.parser('application/json'))
                 }
+
+                // temporary fix as response is jsoup document for some reason
+                def jsonResponse = jsonSlurper.parseText((response as Document).body().html())
 
                 Collection<Article> articles = jsonResponse.values().findAll({ it.is_article == '1' }).collect({
                     Article.builder()
