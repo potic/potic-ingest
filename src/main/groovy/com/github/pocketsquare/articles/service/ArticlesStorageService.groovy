@@ -59,14 +59,12 @@ class ArticlesStorageService {
             void act() {
                 log.info "requesting ${requestSize} articles for user with id=${userId} with offset=${offset}"
 
-                def response = ingestService.get() {
+                def jsonResponse = ingestService.get() {
                     request.uri.path = "/fetch/${userId}"
                     request.uri.query = [ count: requestSize, offset: offset ]
+
+                    response.parser 'application/json'
                 }
-
-                log.info "response:\n${response.toString()}"
-
-                def jsonResponse = jsonSlurper.parseText(response.toString())
 
                 Collection<Article> articles = jsonResponse.values().findAll({ it.is_article == '1' }).collect({
                     Article.builder()
