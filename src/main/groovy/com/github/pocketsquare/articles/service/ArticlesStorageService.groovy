@@ -65,9 +65,12 @@ class ArticlesStorageService {
             void act() {
                 log.info "requesting ${requestSize} articles for user with id=${userId} with offset=${offset}"
 
-                def jsonResponse = ingestService.get() {
+                def jsonResponse = ingestService.get {
                     request.uri.path = "/fetch/${userId}"
                     request.uri.query = [ count: requestSize, offset: offset ]
+                    request.contentType =  'application/json'
+
+                    response.parser('application/json', response.parser('application/json'))
                 }
 
                 Collection<Article> articles = jsonResponse.values().findAll({ it.is_article == '1' }).collect({
