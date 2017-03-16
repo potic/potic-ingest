@@ -64,6 +64,8 @@ class ArticlesStorageService {
                     request.uri.query = [ count: requestSize, offset: offset ]
                 }
 
+                log.info "response:\n${response.toString()}"
+
                 def jsonResponse = jsonSlurper.parseText(response.toString())
 
                 Collection<Article> articles = jsonResponse.values().findAll({ it.is_article == '1' }).collect({
