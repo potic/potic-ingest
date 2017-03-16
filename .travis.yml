@@ -17,10 +17,16 @@ cache:
 before_install:
 - chmod +x gradlew
 
+install:
+- "./gradlew build jacocoTestReport --scan"
+
+after_success:
+- bash <(curl -s https://codecov.io/bash)
+
 before_script:
 - docker login -e="$DOCKER_EMAIL" -u="$DOCKER_USERNAME" -p="$DOCKER_PASSWORD"
 
-after_script:
+script:
 - export DOCKER_REPO=pocketsquare/pocket-square-articles
 - export TAG=`if [ "$TRAVIS_BRANCH" == "master" ]; then echo "latest"; else echo $TRAVIS_BRANCH | tr '/' '-' ; fi`
 - docker build -t $DOCKER_REPO:travis-$TRAVIS_BUILD_NUMBER .

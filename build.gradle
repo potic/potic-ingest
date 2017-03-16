@@ -1,6 +1,9 @@
 plugins {
-    id 'com.gradle.build-scan' version '1.4'
-    id 'org.springframework.boot' version '1.4.3.RELEASE'
+    id 'com.gradle.build-scan' version '1.6'
+
+    id 'org.springframework.boot' version '1.5.2.RELEASE'
+
+    id 'jacoco'
 }
 
 apply plugin: 'groovy'
@@ -10,12 +13,18 @@ version = '0.1-SNAPSHOT'
 
 repositories {
     jcenter()
+    maven {
+        url 'https://dl.bintray.com/yermilov/yermilov-maven/'
+    }
+    mavenLocal()
 }
 
 dependencies {
     compile 'org.springframework.boot:spring-boot-starter-web'
     compile 'org.springframework.data:spring-data-mongodb'
     compile 'org.springframework.boot:spring-boot-starter-data-rest'
+    
+    compile 'io.github.yermilov:kerivnyk:0.5.1'
 
     compile 'org.codehaus.groovy:groovy-all'
 
@@ -28,5 +37,20 @@ dependencies {
     compile 'org.jsoup:jsoup:1.10.2'
 }
 
+buildScan {
+    licenseAgreementUrl = 'https://gradle.com/terms-of-service'
+    licenseAgree = 'yes'
+}
+
+jacocoTestReport {
+    reports {
+        xml.enabled = true
+        html.enabled = true
+    }
+}
+
 apply plugin: 'application'
-mainClassName = 'com.github.pocketsquare.articles.Application'
+
+bootRepackage {
+    mainClass = 'com.github.pocketsquare.articles.Application'
+}

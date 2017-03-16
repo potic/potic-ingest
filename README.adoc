@@ -1,10 +1,18 @@
 = pocket-square-articles
 
-Microservice for retrieving list of articles.
+Service for managing user articles.
 
-TravisCI - https://travis-ci.org/pocket-square/pocket-square-articles/
+== Travis job
 
-DockerHub - https://hub.docker.com/r/pocketsquare/pocket-square-articles/
+image:https://travis-ci.org/pocket-square/pocket-square-articles.svg?branch=develop["Travis job", link="https://travis-ci.org/pocket-square/pocket-square-articles"]
+
+== Code coverage
+
+image:https://codecov.io/gh/pocket-square/pocket-square-articles/branch/develop/graph/badge.svg["Code coverage", link="https://codecov.io/gh/pocket-square/pocket-square-articles"]
+
+== Docker repository
+
+https://hub.docker.com/r/pocketsquare/pocket-square-articles/
 
 == Documentation
 
