@@ -46,6 +46,11 @@ class ArticlesStorageService {
             void init() {
                 ingestService = HttpBuilder.configure {
                     request.uri = INGEST_SERVICE_URL
+                    request.contentType =  'application/json'
+
+                    response.parser('application/json') { config, resp ->
+                        NativeHandlers.Parsers.json(config, resp).json
+                    }
                 }
 
                 requestSize = 10
@@ -63,11 +68,6 @@ class ArticlesStorageService {
                 def jsonResponse = ingestService.get() {
                     request.uri.path = "/fetch/${userId}"
                     request.uri.query = [ count: requestSize, offset: offset ]
-                    request.contentType =  'application/json'
-
-                    response.parser('application/json') { config, resp ->
-                        NativeHandlers.Parsers.json(config, resp).json
-                    }
                 }
 
                 Collection<Article> articles = jsonResponse.values().findAll({ it.is_article == '1' }).collect({
