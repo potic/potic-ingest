@@ -24,7 +24,7 @@ dependencies {
     compile 'org.springframework.data:spring-data-mongodb'
     compile 'org.springframework.boot:spring-boot-starter-data-rest'
     
-    compile 'io.github.yermilov:kerivnyk:0.5.1'
+    compile 'io.github.yermilov:kerivnyk:0.5.2'
 
     compile 'org.codehaus.groovy:groovy-all'
 
@@ -35,6 +35,13 @@ dependencies {
 
     compile 'io.github.http-builder-ng:http-builder-ng-core:0.14.0'
     compile 'org.jsoup:jsoup:1.10.2'
+
+    testCompile 'org.spockframework:spock-core:1.0-groovy-2.4'
+    testRuntime 'cglib:cglib-nodep:3.1'
+    testRuntime 'org.objenesis:objenesis:2.1'
+
+    testCompile 'org.spockframework:spock-spring:1.0-groovy-2.4'
+    testCompile 'org.springframework:spring-test:4.2.6.RELEASE'
 }
 
 buildScan {

@@ -105,7 +105,10 @@ class ArticlesStorageService {
                         }
                     }
                     articleRepository.save article
+                    dashboard.ingestedCount++
                 }
+
+                dashboard.userArticlesCount = articleRepository.countByUserId(userId)
             }
         }
     }

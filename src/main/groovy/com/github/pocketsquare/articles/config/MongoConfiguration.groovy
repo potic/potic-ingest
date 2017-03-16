@@ -26,7 +26,7 @@ class MongoConfiguration extends AbstractMongoConfiguration {
 
     @Override
     Mongo mongo() throws Exception {
-        new MongoClient(new ServerAddress(HOST, PORT), [MongoCredential.createCredential(USERNAME, AUTHENTICATION_DATABASE_NAME, PASSWORD.toCharArray()) ])
+        new MongoClient(new ServerAddress(HOST, PORT), [MongoCredential.createCredential(USERNAME, AUTHENTICATION_DATABASE_NAME, PASSWORD?.toCharArray()?:new char[0]) ])
     }
 
     @Override
