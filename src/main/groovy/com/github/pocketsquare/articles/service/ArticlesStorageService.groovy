@@ -5,6 +5,7 @@ import com.github.pocketsquare.articles.repository.ArticleRepository
 import groovy.json.JsonSlurper
 import groovy.util.logging.Slf4j
 import groovyx.net.http.HttpBuilder
+import groovyx.net.http.NativeHandlers
 import io.github.yermilov.kerivnyk.domain.Job
 import io.github.yermilov.kerivnyk.service.DurableJob
 import org.jsoup.Jsoup
@@ -62,8 +63,11 @@ class ArticlesStorageService {
                 def jsonResponse = ingestService.get() {
                     request.uri.path = "/fetch/${userId}"
                     request.uri.query = [ count: requestSize, offset: offset ]
+                    request.contentType =  'application/json'
 
-                    response.parser 'application/json'
+                    response.parser('application/json') { config, resp ->
+                        NativeHandlers.Parsers.json(config, resp).json
+                    }
                 }
 
                 Collection<Article> articles = jsonResponse.values().findAll({ it.is_article == '1' }).collect({
