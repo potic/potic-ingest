@@ -2,6 +2,7 @@ package com.github.pocketsquare.articles.service
 
 import com.github.pocketsquare.articles.domain.Article
 import com.github.pocketsquare.articles.repository.ArticleRepository
+import groovy.json.JsonSlurper
 import groovy.util.logging.Slf4j
 import groovyx.net.http.HttpBuilder
 import io.github.yermilov.kerivnyk.domain.Job
@@ -18,6 +19,9 @@ class ArticlesStorageService {
 
     @Autowired
     ArticleRepository articleRepository
+
+    @Autowired
+    JsonSlurper jsonSlurper
 
     void deleteByUserId(String userId) {
         articleRepository.deleteByUserId(userId)
@@ -55,10 +59,12 @@ class ArticlesStorageService {
             void act() {
                 log.info "requesting ${requestSize} articles for user with id=${userId} with offset=${offset}"
 
-                def jsonResponse = ingestService.get() {
+                def response = ingestService.get() {
                     request.uri.path = "/fetch/${userId}"
                     request.uri.query = [ count: requestSize, offset: offset ]
                 }
+
+                def jsonResponse = jsonSlurper.parseText(response.toString())
 
                 Collection<Article> articles = jsonResponse.values().findAll({ it.is_article == '1' }).collect({
                     Article.builder()
