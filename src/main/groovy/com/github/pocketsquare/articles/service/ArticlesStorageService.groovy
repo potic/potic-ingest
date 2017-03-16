@@ -93,7 +93,7 @@ class ArticlesStorageService {
                 offset += requestSize
 
                 articles = articles.findAll({ Article article ->
-                    articleRepository.findOneByUserIdAndPocketId(article.userId, article.pocketId) != null
+                    articleRepository.findOneByUserIdAndPocketId(article.userId, article.pocketId) == null
                 })
 
                 log.info "loading ${articles.size()} new articles for user with id=${userId}"
