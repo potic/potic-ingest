@@ -2,12 +2,16 @@ package com.github.pocketsquare.articles.domain
 
 import groovy.transform.builder.Builder
 import org.springframework.data.annotation.Id
+import org.springframework.data.mongodb.core.index.Indexed
 
 @Builder
 class Article {
 
     @Id
     String id
+
+    @Indexed
+    String pocketId
 
     String userId
 

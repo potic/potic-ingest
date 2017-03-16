@@ -9,4 +9,10 @@ interface ArticleRepository extends PagingAndSortingRepository<Article, String> 
     List<Article> findByUserId(String userId)
 
     List<Article> findByUserId(String userId, Pageable pageable)
+
+    void deleteByUserId(String userId)
+
+    int countByUserId(String userId)
+
+    Article findOneByUserIdAndPocketId(String userId, String pocketId)
 }
