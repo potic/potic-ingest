@@ -14,7 +14,7 @@ import org.springframework.stereotype.Service
 @Slf4j
 class ArticlesStorageService {
 
-    static final String INGEST_SERVICE_URL = 'http://pocket_square_ingest:5000/'
+    static final String INGEST_SERVICE_URL = 'http://pocket-square-ingest:5000/'
 
     @Autowired
     ArticleRepository articleRepository

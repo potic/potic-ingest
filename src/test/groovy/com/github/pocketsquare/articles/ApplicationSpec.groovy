@@ -7,7 +7,7 @@ import spock.lang.Ignore
 import spock.lang.Specification
 
 @ContextConfiguration(classes = Application)
-class ApplicationTest extends Specification {
+class ApplicationSpec extends Specification {
 
     @Autowired
     KerivnykService kerivnykService

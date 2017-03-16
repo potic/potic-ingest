@@ -5,7 +5,7 @@
 [source,shell]
 ----
 docker ps
-docker kill pocket_square_mongo; docker rm pocket_square_mongo
+docker kill pocket-square-mongo; docker rm pocket-square-mongo
 ----
 
 == Cleaning data
@@ -20,14 +20,14 @@ rm -rf /data/mongodb
 [source,shell]
 ----
 docker pull mongo:3.4.1
-docker run --name pocket_square_mongo -v /data/mongodb:/data/db -d mongo:3.4.1 --auth
+docker run --name pocket-square-mongo -v /data/mongodb:/data/db -d mongo:3.4.1 --auth
 ----
 
 == Add admin user
 
 [source,shell]
 ----
-docker exec -it pocket_square_mongo mongo admin
+docker exec -it pocket-square-mongo mongo admin
 ----
 
 [source,shell]
@@ -40,7 +40,7 @@ db.createUser({ user: 'pocketSquareAdmin', pwd: '$PASSWORD', roles: [ { role: "u
 
 [source,shell]
 ----
-docker run -it --rm --link pocket_square_mongo:mongo mongo:3.4.1 mongo -u pocketSquareAdmin -p ?PASSWORD --authenticationDatabase admin pocket_square_mongo/admin
+docker run -it --rm --link pocket-square-mongo:mongo mongo:3.4.1 mongo -u pocketSquareAdmin -p ?PASSWORD --authenticationDatabase admin pocket-square-mongo/admin
 ----
 
 [source,shell]
@@ -53,7 +53,7 @@ db.createUser({ user: 'articlesRoot', pwd: '?PASSWORD', roles: [ { role: "root",
 
 [source,shell]
 ----
-docker run -it --rm --link pocket_square_mongo:mongo mongo:3.4.1 mongo -u pocketSquareAdmin -p ?PASSWORD --authenticationDatabase admin pocket_square_mongo/admin
+docker run -it --rm --link pocket-square-mongo:mongo mongo:3.4.1 mongo -u pocketSquareAdmin -p ?PASSWORD --authenticationDatabase admin pocket-square-mongo/admin
 ----
 
 [source,shell]
@@ -66,19 +66,19 @@ db.createUser({ user: 'articlesService', pwd: '?PASSWORD', roles: [ { role: "rea
 
 [source,shell]
 ----
-docker run -it --rm --link pocket_square_mongo:mongo mongo:3.4.1 mongo -u pocketSquareAdmin -p ?PASSWORD --authenticationDatabase admin pocket_square_mongo/admin
+docker run -it --rm --link pocket-square-mongo:mongo mongo:3.4.1 mongo -u pocketSquareAdmin -p ?PASSWORD --authenticationDatabase admin pocket-square-mongo/admin
 ----
 
 [source,shell]
 ----
-docker run -it --rm --link pocket_square_mongo:mongo mongo:3.4.1 mongo -u articlesService -p ?PASSWORD --authenticationDatabase admin pocket_square_mongo/pocketSquare
+docker run -it --rm --link pocket-square-mongo:mongo mongo:3.4.1 mongo -u articlesService -p ?PASSWORD --authenticationDatabase admin pocket-square-mongo/pocketSquare
 ----
 
 == Setup indexes
 
 [source,shell]
 ----
-docker run -it --rm --link pocket_square_mongo:mongo mongo:3.4.1 mongo -u articlesService -p ?PASSWORD --authenticationDatabase admin pocket_square_mongo/pocketSquare
+docker run -it --rm --link pocket-square-mongo:mongo mongo:3.4.1 mongo -u articlesService -p ?PASSWORD --authenticationDatabase admin pocket-square-mongo/pocketSquare
 ----
 
 [source,shell]
