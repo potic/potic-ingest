@@ -20,6 +20,6 @@ class ArticlesRetrievalController {
 
     @GetMapping(path = '/article/byUserId/{userId}/unread')
     @ResponseBody Collection<Article> getUnreadByUserId(@PathVariable String userId, @RequestParam('page') Integer page, @RequestParam('size') Integer size) {
-        articleRepository.findByUserId(userId, new PageRequest(page, size)).findAll({ !it.read })
+        articleRepository.findByUserIdAndRead(userId, false, new PageRequest(page, size))
     }
 }
