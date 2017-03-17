@@ -41,6 +41,7 @@ class ArticlesStorageService {
             int requestSize
             int offset
 
+            boolean suspend
             long suspendedUntil
 
             @Override
@@ -56,7 +57,7 @@ class ArticlesStorageService {
 
                 requestSize = 10
                 offset = 0
-                suspendedUntil = null
+                suspend = false
 
                 dashboard.userId = userId
                 dashboard.ingestedCount = 0
@@ -66,10 +67,10 @@ class ArticlesStorageService {
             @Override
             void act() {
                 try {
-                    if (suspendedUntil != null && System.currentTimeMillis() < suspendedUntil) {
+                    if (suspend && System.currentTimeMillis() < suspendedUntil) {
                         return
                     }
-                    suspendedUntil = null
+                    suspend = false
                     dashboard.suspendedUntil = null
 
                     log.info "requesting ${requestSize} articles for user with id=${userId} with offset=${offset}"
@@ -84,6 +85,7 @@ class ArticlesStorageService {
 
                     if (jsonResponse.empty) {
                         offset = 0
+                        suspend = true
                         suspendedUntil = System.currentTimeMillis() + TimeUnit.HOURS.toMillis(1);
                         dashboard.suspendedUntil = new Date(suspendedUntil).toInstant().atZone(ZoneId.systemDefault()).toLocalDateTime().toString()
 
