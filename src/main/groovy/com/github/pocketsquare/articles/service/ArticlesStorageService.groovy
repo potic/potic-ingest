@@ -69,11 +69,15 @@ class ArticlesStorageService {
             @Override
             void act() {
                 try {
-                    if (suspend && System.currentTimeMillis() < suspendedUntil) {
-                        return
+                    if (suspend) {
+                        if (System.currentTimeMillis() < suspendedUntil) {
+                            return
+                        } else {
+                            offset = 0
+                            suspend = false
+                            dashboard.remove('suspendedUntil')
+                        }
                     }
-                    suspend = false
-                    dashboard.remove('suspendedUntil')
 
                     log.info "requesting ${requestSize} articles for user with id=${userId} with offset=${offset}"
 
@@ -86,7 +90,6 @@ class ArticlesStorageService {
                     def jsonResponse = jsonSlurper.parseText((response as Document).body().html())
 
                     if (jsonResponse.empty) {
-                        offset = 0
                         suspend = true
                         suspendedUntil = System.currentTimeMillis() + TimeUnit.HOURS.toMillis(1);
                         dashboard.suspendedUntil = new Date(suspendedUntil).toInstant().atZone(ZoneId.systemDefault()).toLocalDateTime().toString()
