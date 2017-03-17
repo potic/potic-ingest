@@ -12,7 +12,6 @@ import org.jsoup.nodes.Document
 import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.stereotype.Service
 
-import java.time.LocalDateTime
 import java.time.ZoneId
 import java.util.concurrent.TimeUnit
 
@@ -21,6 +20,9 @@ import java.util.concurrent.TimeUnit
 class ArticlesStorageService {
 
     static final String INGEST_SERVICE_URL = 'http://pocket-square-ingest:5000/'
+
+    static final Integer DEFAULT_REQUEST_SIZE = 100
+    static final Integer INGEST_REQUEST_SIZE = Integer.parseInt(System.getenv('INGEST_REQUEST_SIZE') ?: DEFAULT_REQUEST_SIZE.toString())
 
     @Autowired
     ArticleRepository articleRepository
@@ -55,7 +57,7 @@ class ArticlesStorageService {
                     request.uri = INGEST_SERVICE_URL
                 }
 
-                requestSize = 10
+                requestSize = INGEST_REQUEST_SIZE
                 offset = 0
                 suspend = false
 

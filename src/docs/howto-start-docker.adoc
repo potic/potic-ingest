@@ -12,6 +12,8 @@ docker kill pocket-square-articles; docker rm pocket-square-articles
 
 Following environment variable are available for global service configuration:
 
+INGEST_REQUEST_SIZE - number of records requested from ingest service at once
+
 MONGO_DATABASE_NAME - mongodb database name to use (default is pocketSquare)
 
 MONGO_AUTH_DATABASE_NAME - mongodb database name used for authentication (default is admin)
