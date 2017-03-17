@@ -71,7 +71,7 @@ class ArticlesStorageService {
                         return
                     }
                     suspend = false
-                    dashboard.suspendedUntil = null
+                    dashboard.remove('suspendedUntil')
 
                     log.info "requesting ${requestSize} articles for user with id=${userId} with offset=${offset}"
 
