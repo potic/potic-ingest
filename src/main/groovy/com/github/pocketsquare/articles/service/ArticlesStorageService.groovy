@@ -5,7 +5,6 @@ import com.github.pocketsquare.articles.repository.ArticleRepository
 import groovy.json.JsonSlurper
 import groovy.util.logging.Slf4j
 import groovyx.net.http.HttpBuilder
-import groovyx.net.http.NativeHandlers
 import io.github.yermilov.kerivnyk.domain.Job
 import io.github.yermilov.kerivnyk.service.DurableJob
 import org.jsoup.Jsoup
@@ -59,65 +58,70 @@ class ArticlesStorageService {
 
             @Override
             void act() {
-                log.info "requesting ${requestSize} articles for user with id=${userId} with offset=${offset}"
+                try {
+                    log.info "requesting ${requestSize} articles for user with id=${userId} with offset=${offset}"
 
-                def response = ingestService.get {
-                    request.uri.path = "/fetch/${userId}"
-                    request.uri.query = [ count: requestSize, offset: offset ]
-                }
-
-                // temporary fix as response is jsoup document for some reason
-                def jsonResponse = jsonSlurper.parseText((response as Document).body().html())
-
-                Collection<Article> articles = jsonResponse.values().findAll({ it.is_article == '1' }).collect({
-                    Article.builder()
-                            .userId(userId)
-                            .pocketId(it.resolved_id)
-                            .givenUrl(it.given_url)
-                            .resolvedUrl(it.resolved_url)
-                            .title(it.resolved_title)
-                            .order(it.sort_id)
-                            .read(it.status == '1')
-                            .favorite(it.favorite == '1')
-                            .wordCount(Integer.parseInt(it.word_count))
-                            .tags(it.tags?.keySet()?:[])
-                            .authors(it.authors?.values()?.collect({ it.name })?:[])
-                            .build()
-                })
-
-                if (articles.empty) {
-                    finished()
-                }
-
-                log.info "received ${articles.size()} articles for user with id=${userId}"
-                offset += requestSize
-
-                articles = articles.findAll({ Article article ->
-                    articleRepository.findOneByUserIdAndPocketId(article.userId, article.pocketId) == null
-                })
-
-                log.info "loading ${articles.size()} new articles for user with id=${userId}"
-                articles.eachWithIndex { Article article, int index ->
-                    log.info "processing article ${index + 1} / ${articles.size()} for user with id=${userId}"
-                    try {
-                        log.info "trying to load ${article.givenUrl} for user with id=${userId}"
-                        article.content = Jsoup.connect(article.givenUrl).get().html()
-                    } catch (e) {
-                        log.warn "failed to load ${article.givenUrl} for user with id=${userId}"
+                    def response = ingestService.get {
+                        request.uri.path = "/fetch/${userId}"
+                        request.uri.query = [count: requestSize, offset: offset]
                     }
-                    if (article.content == null) {
+
+                    // temporary fix as response is jsoup document for some reason
+                    def jsonResponse = jsonSlurper.parseText((response as Document).body().html())
+
+                    Collection<Article> articles = jsonResponse.values().findAll({ it.is_article == '1' }).collect({
+                        Article.builder()
+                                .userId(userId)
+                                .pocketId(it.resolved_id)
+                                .givenUrl(it.given_url)
+                                .resolvedUrl(it.resolved_url)
+                                .title(it.resolved_title)
+                                .order(it.sort_id)
+                                .read(it.status == '1')
+                                .favorite(it.favorite == '1')
+                                .wordCount(Integer.parseInt(it.word_count))
+                                .tags(it.tags?.keySet() ?: [])
+                                .authors(it.authors?.values()?.collect({ it.name }) ?: [])
+                                .build()
+                    })
+
+                    log.info "received ${articles.size()} articles for user with id=${userId}"
+
+                    if (articles.empty) {
+                        offset = 0
+                        return
+                    }
+
+                    articles = articles.findAll({ Article article ->
+                        articleRepository.findOneByUserIdAndPocketId(article.userId, article.pocketId) == null
+                    })
+
+                    log.info "loading ${articles.size()} new articles for user with id=${userId}"
+                    articles.eachWithIndex { Article article, int index ->
+                        log.info "processing article ${index + 1} / ${articles.size()} for user with id=${userId}"
                         try {
-                            log.info "trying to load ${article.resolvedUrl} for user with id=${userId}"
-                            article.content = Jsoup.connect(article.resolvedUrl).get().html()
+                            log.info "trying to load ${article.givenUrl} for user with id=${userId}"
+                            article.content = Jsoup.connect(article.givenUrl).get().html()
                         } catch (e) {
-                            log.warn "failed to load ${article.resolvedUrl} for user with id=${userId}"
+                            log.warn "failed to load ${article.givenUrl} for user with id=${userId}"
                         }
+                        if (article.content == null) {
+                            try {
+                                log.info "trying to load ${article.resolvedUrl} for user with id=${userId}"
+                                article.content = Jsoup.connect(article.resolvedUrl).get().html()
+                            } catch (e) {
+                                log.warn "failed to load ${article.resolvedUrl} for user with id=${userId}"
+                            }
+                        }
+                        articleRepository.save article
+                        dashboard.ingestedCount++
                     }
-                    articleRepository.save article
-                    dashboard.ingestedCount++
+                } catch (e) {
+                    log.warn "Failed during ingesting articles for user with id=${userId} with offset=${offset} because of ${e.class}: ${e.message}"
+                } finally {
+                    dashboard.userArticlesCount = articleRepository.countByUserId(userId)
+                    offset += requestSize
                 }
-
-                dashboard.userArticlesCount = articleRepository.countByUserId(userId)
             }
         }
     }
