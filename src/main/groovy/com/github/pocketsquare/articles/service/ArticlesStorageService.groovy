@@ -12,6 +12,10 @@ import org.jsoup.nodes.Document
 import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.stereotype.Service
 
+import java.time.LocalDateTime
+import java.time.ZoneId
+import java.util.concurrent.TimeUnit
+
 @Service
 @Slf4j
 class ArticlesStorageService {
@@ -37,6 +41,8 @@ class ArticlesStorageService {
             int requestSize
             int offset
 
+            long suspendedUntil
+
             @Override
             boolean canStart(Collection<Job> concurrentJobs) {
                 concurrentJobs.find({ Job job -> job.name == this.name }) == null
@@ -50,6 +56,7 @@ class ArticlesStorageService {
 
                 requestSize = 10
                 offset = 0
+                suspendedUntil = null
 
                 dashboard.userId = userId
                 dashboard.ingestedCount = 0
@@ -59,6 +66,12 @@ class ArticlesStorageService {
             @Override
             void act() {
                 try {
+                    if (suspendedUntil != null && System.currentTimeMillis() < suspendedUntil) {
+                        return
+                    }
+                    suspendedUntil = null
+                    dashboard.suspendedUntil = null
+
                     log.info "requesting ${requestSize} articles for user with id=${userId} with offset=${offset}"
 
                     def response = ingestService.get {
@@ -68,6 +81,16 @@ class ArticlesStorageService {
 
                     // temporary fix as response is jsoup document for some reason
                     def jsonResponse = jsonSlurper.parseText((response as Document).body().html())
+
+                    if (jsonResponse.empty) {
+                        offset = 0
+                        suspendedUntil = System.currentTimeMillis() + TimeUnit.HOURS.toMillis(1);
+                        dashboard.suspendedUntil = new Date(suspendedUntil).toInstant().atZone(ZoneId.systemDefault()).toLocalDateTime().toString()
+
+                        log.info "all articles ingested so far for user with id=${userId}, suspend job until ${dashboard.suspendedUntil}"
+
+                        return
+                    }
 
                     Collection<Article> articles = jsonResponse.values().findAll({ it.is_article == '1' }).collect({
                         Article.builder()
@@ -86,12 +109,6 @@ class ArticlesStorageService {
                     })
 
                     log.info "received ${articles.size()} articles for user with id=${userId}"
-
-                    if (articles.empty) {
-                        offset = 0
-                        return
-                    }
-
                     articles = articles.findAll({ Article article ->
                         articleRepository.findOneByUserIdAndPocketId(article.userId, article.pocketId) == null
                     })
