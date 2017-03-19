@@ -99,9 +99,8 @@ class ArticlesStorageService {
 
                     log.info "received ${articles.size()} articles for user with id=${userId}"
                     Collection<Article> existingArticles = articles.findAll({ Article article ->
-                        Collection articleId = articleRepository.findOneByUserIdAndPocketId(article.userId, article.pocketId)?.id
-                        article.id = articleId
-                        return articleId != null
+                        article.id = articleRepository.findOneByUserIdAndPocketId(article.userId, article.pocketId)?.id
+                        return article.id != null
                     })
                     log.info "updating metadata of ${existingArticles.size()} existing articles for user with id=${userId}"
                     articleRepository.save existingArticles
@@ -128,7 +127,7 @@ class ArticlesStorageService {
                         dashboard.ingestedCount++
                     }
                 } catch (e) {
-                    log.warn "failed during ingesting articles for user with id=${userId} with offset=${offset} because of ${e.class}: ${e.message}"
+                    log.warn("failed during ingesting articles for user with id=${userId} with offset=${offset} because of ${e.class}: ${e.message}", e)
                 } finally {
                     dashboard.userArticlesCount = articleRepository.countByUserId(userId)
                     offset += requestSize
