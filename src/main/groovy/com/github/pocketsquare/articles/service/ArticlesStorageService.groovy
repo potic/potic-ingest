@@ -99,16 +99,18 @@ class ArticlesStorageService {
 
                     log.info "received ${articles.size()} articles for user with id=${userId}"
                     Collection<Article> existingArticles = articles.findAll({ Article article ->
-                        article.id = articleRepository.findOneByUserIdAndPocketId(article.userId, article.pocketId)?.id
-                        return article.id != null
+                        Article existingArticle = articleRepository.findOneByUserIdAndPocketId(article.userId, article.pocketId)
+                        article.id = existingArticle?.id
+                        article.content = existingArticle?.content
+                        return existingArticle != null
                     })
                     log.info "updating metadata of ${existingArticles.size()} existing articles for user with id=${userId}"
                     articleRepository.save existingArticles
 
-                    Collection<Article> newArticles = articles.findAll({ Article article -> article.id == null })
-                    log.info "ingesting ${newArticles.size()} new articles for user with id=${userId}"
-                    newArticles.eachWithIndex { Article article, int index ->
-                        log.info "processing article ${index + 1} / ${newArticles.size()} for user with id=${userId}"
+                    Collection<Article> articlesWithoutContent = articles.findAll({ Article article -> article.content == null })
+                    log.info "ingesting content of ${articlesWithoutContent.size()} articles for user with id=${userId}"
+                    articlesWithoutContent.eachWithIndex { Article article, int index ->
+                        log.info "processing article ${index + 1} / ${articlesWithoutContent.size()} for user with id=${userId}"
                         try {
                             log.info "trying to load ${article.givenUrl} for user with id=${userId}"
                             article.content = Jsoup.connect(article.givenUrl).get().html()
