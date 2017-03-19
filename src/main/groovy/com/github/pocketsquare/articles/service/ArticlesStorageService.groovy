@@ -77,6 +77,7 @@ class ArticlesStorageService {
 
                     if (jsonResponse.empty) {
                         log.info "all articles ingested so far for user with id=${userId}"
+                        offset = 0
                         suspend(SUSPEND_DURATION)
                         return
                     }
@@ -128,11 +129,12 @@ class ArticlesStorageService {
                         articleRepository.save article
                         dashboard.ingestedCount++
                     }
+                    offset += requestSize
                 } catch (e) {
                     log.warn("failed during ingesting articles for user with id=${userId} with offset=${offset} because of ${e.class}: ${e.message}", e)
+                    offset++
                 } finally {
                     dashboard.userArticlesCount = articleRepository.countByUserId(userId)
-                    offset += requestSize
                 }
             }
         }
