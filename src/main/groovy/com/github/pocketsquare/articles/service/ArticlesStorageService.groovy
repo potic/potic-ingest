@@ -32,7 +32,7 @@ class ArticlesStorageService {
 
     void deleteByUserId(String userId) {
         articleRepository.deleteByUserId(userId)
-        log.info "Successfully removed all articles of user with id=${userId} from database"
+        log.info "successfully removed all articles of user with id=${userId} from database"
     }
 
     DurableJob ingestArticlesByUserIdJob(String userId) {
@@ -98,13 +98,18 @@ class ArticlesStorageService {
                     })
 
                     log.info "received ${articles.size()} articles for user with id=${userId}"
-                    articles = articles.findAll({ Article article ->
-                        articleRepository.findOneByUserIdAndPocketId(article.userId, article.pocketId) == null
+                    Collection<Article> existingArticles = articles.findAll({ Article article ->
+                        Collection articleId = articleRepository.findOneByUserIdAndPocketId(article.userId, article.pocketId)?.id
+                        article.id = articleId
+                        return articleId != null
                     })
+                    log.info "updating metadata of ${existingArticles.size()} existing articles for user with id=${userId}"
+                    articleRepository.save existingArticles
 
-                    log.info "loading ${articles.size()} new articles for user with id=${userId}"
-                    articles.eachWithIndex { Article article, int index ->
-                        log.info "processing article ${index + 1} / ${articles.size()} for user with id=${userId}"
+                    Collection<Article> newArticles = articles.findAll({ Article article -> article.id == null })
+                    log.info "ingesting ${newArticles.size()} new articles for user with id=${userId}"
+                    newArticles.eachWithIndex { Article article, int index ->
+                        log.info "processing article ${index + 1} / ${newArticles.size()} for user with id=${userId}"
                         try {
                             log.info "trying to load ${article.givenUrl} for user with id=${userId}"
                             article.content = Jsoup.connect(article.givenUrl).get().html()
@@ -123,7 +128,7 @@ class ArticlesStorageService {
                         dashboard.ingestedCount++
                     }
                 } catch (e) {
-                    log.warn "Failed during ingesting articles for user with id=${userId} with offset=${offset} because of ${e.class}: ${e.message}"
+                    log.warn "failed during ingesting articles for user with id=${userId} with offset=${offset} because of ${e.class}: ${e.message}"
                 } finally {
                     dashboard.userArticlesCount = articleRepository.countByUserId(userId)
                     offset += requestSize
