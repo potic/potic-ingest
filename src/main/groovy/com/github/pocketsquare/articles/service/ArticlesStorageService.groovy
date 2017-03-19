@@ -58,7 +58,6 @@ class ArticlesStorageService {
                 offset = 0
 
                 dashboard.userId = userId
-                dashboard.ingestedCount = 0
                 dashboard.userArticlesCount = articleRepository.countByUserId(userId)
             }
 
@@ -127,7 +126,6 @@ class ArticlesStorageService {
                             }
                         }
                         articleRepository.save article
-                        dashboard.ingestedCount++
                     }
                     offset += requestSize
                 } catch (e) {
