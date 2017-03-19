@@ -12,9 +12,6 @@ import org.jsoup.nodes.Document
 import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.stereotype.Service
 
-import java.time.ZoneId
-import java.util.concurrent.TimeUnit
-
 @Service
 @Slf4j
 class ArticlesStorageService {
@@ -23,6 +20,9 @@ class ArticlesStorageService {
 
     static final Integer DEFAULT_REQUEST_SIZE = 100
     static final Integer INGEST_REQUEST_SIZE = Integer.parseInt(System.getenv('INGEST_REQUEST_SIZE') ?: DEFAULT_REQUEST_SIZE.toString())
+
+    static final String DEFAULT_SUSPEND_DURATION = '1h'
+    static final String SUSPEND_DURATION = System.getenv('SUSPEND_DURATION') ?: DEFAULT_SUSPEND_DURATION
 
     @Autowired
     ArticleRepository articleRepository
@@ -43,9 +43,6 @@ class ArticlesStorageService {
             int requestSize
             int offset
 
-            boolean suspend
-            long suspendedUntil
-
             @Override
             boolean canStart(Collection<Job> concurrentJobs) {
                 concurrentJobs.find({ Job job -> job.name == this.name }) == null
@@ -59,7 +56,6 @@ class ArticlesStorageService {
 
                 requestSize = INGEST_REQUEST_SIZE
                 offset = 0
-                suspend = false
 
                 dashboard.userId = userId
                 dashboard.ingestedCount = 0
@@ -69,16 +65,6 @@ class ArticlesStorageService {
             @Override
             void act() {
                 try {
-                    if (suspend) {
-                        if (System.currentTimeMillis() < suspendedUntil) {
-                            return
-                        } else {
-                            offset = 0
-                            suspend = false
-                            dashboard.remove('suspendedUntil')
-                        }
-                    }
-
                     log.info "requesting ${requestSize} articles for user with id=${userId} with offset=${offset}"
 
                     def response = ingestService.get {
@@ -90,12 +76,8 @@ class ArticlesStorageService {
                     def jsonResponse = jsonSlurper.parseText((response as Document).body().html())
 
                     if (jsonResponse.empty) {
-                        suspend = true
-                        suspendedUntil = System.currentTimeMillis() + TimeUnit.HOURS.toMillis(1);
-                        dashboard.suspendedUntil = new Date(suspendedUntil).toInstant().atZone(ZoneId.systemDefault()).toLocalDateTime().toString()
-
-                        log.info "all articles ingested so far for user with id=${userId}, suspend job until ${dashboard.suspendedUntil}"
-
+                        log.info "all articles ingested so far for user with id=${userId}"
+                        suspend(SUSPEND_DURATION)
                         return
                     }
 
