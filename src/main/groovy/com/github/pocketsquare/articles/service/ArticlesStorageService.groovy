@@ -68,7 +68,7 @@ class ArticlesStorageService {
 
                     def response = ingestService.get {
                         request.uri.path = "/fetch/${userId}"
-                        request.uri.query = [count: requestSize, offset: offset]
+                        request.uri.query = [ count: requestSize, offset: offset ]
                     }
 
                     // temporary fix as response is jsoup document for some reason
@@ -81,8 +81,11 @@ class ArticlesStorageService {
                         return
                     }
 
-                    Collection<Article> articles = jsonResponse.values().findAll({ it.is_article == '1' }).collect({
+                    Collection<Article> articles = jsonResponse.values().collect({
+                        Article alreadyIngestedArticle = articleRepository.findOneByUserIdAndPocketId(userId, it.resolved_id)
+
                         Article.builder()
+                                .id(alreadyIngestedArticle?.id)
                                 .userId(userId)
                                 .pocketId(it.resolved_id)
                                 .givenUrl(it.given_url)
@@ -94,23 +97,18 @@ class ArticlesStorageService {
                                 .wordCount(Integer.parseInt(it.word_count))
                                 .tags(it.tags?.keySet() ?: [])
                                 .authors(it.authors?.values()?.collect({ it.name }) ?: [])
+                                .content(alreadyIngestedArticle?.content)
                                 .build()
                     })
-
                     log.info "received ${articles.size()} articles for user with id=${userId}"
-                    Collection<Article> existingArticles = articles.findAll({ Article article ->
-                        Article existingArticle = articleRepository.findOneByUserIdAndPocketId(article.userId, article.pocketId)
-                        article.id = existingArticle?.id
-                        article.content = existingArticle?.content
-                        return existingArticle != null
-                    })
+
+                    Collection<Article> existingArticles = articles.findAll({ Article article -> article.id != null })
                     log.info "updating metadata of ${existingArticles.size()} existing articles for user with id=${userId}"
                     articleRepository.save existingArticles
 
                     Collection<Article> articlesWithoutContent = articles.findAll({ Article article -> article.content == null })
                     log.info "ingesting content of ${articlesWithoutContent.size()} articles for user with id=${userId}"
-                    articlesWithoutContent.eachWithIndex { Article article, int index ->
-                        log.info "processing article ${index + 1} / ${articlesWithoutContent.size()} for user with id=${userId}"
+                    articlesWithoutContent.each { Article article ->
                         try {
                             log.info "trying to load ${article.givenUrl} for user with id=${userId}"
                             article.content = Jsoup.connect(article.givenUrl).get().html()
