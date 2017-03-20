@@ -115,7 +115,7 @@ class ArticlesStorageService {
                         } catch (e) {
                             log.warn "failed to load ${article.givenUrl} for user with id=${userId}"
                         }
-                        if (article.content == null) {
+                        if (article.content == null && article.resolvedUrl != article.givenUrl) {
                             try {
                                 log.info "trying to load ${article.resolvedUrl} for user with id=${userId}"
                                 article.content = Jsoup.connect(article.resolvedUrl).get().html()
