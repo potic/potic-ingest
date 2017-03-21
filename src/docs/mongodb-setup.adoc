@@ -85,5 +85,6 @@ docker run -it --rm --link pocket-square-mongo:mongo mongo:3.4.1 mongo -u articl
 .Execute in mongo shell
 ----
 db.article.getIndexes()
+db.article.createIndex({ userId: 1 })
 db.article.createIndex({ pocketId: 1 })
 ----

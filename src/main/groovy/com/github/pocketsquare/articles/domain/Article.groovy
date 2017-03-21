@@ -13,6 +13,7 @@ class Article {
     @Indexed
     String pocketId
 
+    @Indexed
     String userId
 
     String givenUrl
@@ -24,6 +25,16 @@ class Article {
     Integer order
     Collection<String> tags
     Collection<String> authors
+
+    String source
+
+    Image mainImage
+    String excerpt
+
+    Long timeAdded
+    Long timeUpdated
+    Long timeFavored
+    Long timeRead
 
     String content
 }

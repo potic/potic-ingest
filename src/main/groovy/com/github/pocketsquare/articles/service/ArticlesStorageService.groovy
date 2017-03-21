@@ -1,6 +1,7 @@
 package com.github.pocketsquare.articles.service
 
 import com.github.pocketsquare.articles.domain.Article
+import com.github.pocketsquare.articles.domain.Image
 import com.github.pocketsquare.articles.repository.ArticleRepository
 import groovy.json.JsonSlurper
 import groovy.util.logging.Slf4j
@@ -97,6 +98,13 @@ class ArticlesStorageService {
                                 .wordCount(Integer.parseInt(it.word_count))
                                 .tags(it.tags?.keySet() ?: [])
                                 .authors(it.authors?.values()?.collect({ it.name }) ?: [])
+                                .source(extractSource(it))
+                                .mainImage(extractMainImage(it.images))
+                                .excerpt(it.excerpt)
+                                .timeAdded(it.time_added)
+                                .timeFavored(it.time_favorited)
+                                .timeRead(it.time_read)
+                                .timeUpdated(it.time_updated)
                                 .content(alreadyIngestedArticle?.content)
                                 .build()
                     })
@@ -132,6 +140,44 @@ class ArticlesStorageService {
                 } finally {
                     dashboard.userArticlesCount = articleRepository.countByUserId(userId)
                 }
+            }
+
+            Image extractMainImage(json) {
+                if (json.empty) {
+                    null
+                } else {
+                    Image.builder()
+                        .pocketId("${json.first().item_id}-${json.first().image_id}")
+                        .src(json.first().src)
+                        .width(json.first().width)
+                        .height(json.first().height)
+                        .credit(json.first().credit)
+                        .caption(json.first().caption)
+                        .build()
+                }
+            }
+
+            String extractSource(json) {
+                String url = json.resolved_url
+
+                int startIndex
+                int endIndex
+
+                if (url.startsWith('http://')) {
+                    startIndex = 'http://'.length() + 1
+                }
+
+                if (url.startsWith('https://')) {
+                    startIndex = 'https://'.length() + 1
+                }
+
+                endIndex = url.substring(startIndex).indexOf('/')
+
+                if (endIndex == -1) {
+                    endIndex = url.length()
+                }
+
+                return url.substring(startIndex, endIndex)
             }
         }
     }
