@@ -176,6 +176,10 @@ class ArticlesStorageService {
                     startIndex += 'www.'.length()
                 }
 
+                if (url.substring(startIndex).startsWith('m.')) {
+                    startIndex += 'm.'.length()
+                }
+
                 endIndex = url.indexOf('/', startIndex)
                 if (endIndex < 0) {
                     endIndex = url.length()
