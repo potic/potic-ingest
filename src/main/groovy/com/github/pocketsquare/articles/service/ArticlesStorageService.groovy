@@ -143,7 +143,7 @@ class ArticlesStorageService {
             }
 
             Image extractMainImage(json) {
-                if (json.empty) {
+                if (json == null || json.empty) {
                     null
                 } else {
                     def mainImageJson = json.values().min({ Integer.parseInt(it.image_id) })
