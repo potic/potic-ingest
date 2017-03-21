@@ -162,7 +162,7 @@ class ArticlesStorageService {
             String extractSource(json) {
                 String url = json.resolved_url
 
-                int startIndex
+                int startIndex = 0
                 int endIndex
 
                 if (url.startsWith('http://')) {
@@ -173,9 +173,8 @@ class ArticlesStorageService {
                     startIndex = 'https://'.length() + 1
                 }
 
-                endIndex = url.substring(startIndex).indexOf('/')
-
-                if (endIndex == -1) {
+                endIndex = url.indexOf('/', startIndex)
+                if (endIndex < 0) {
                     endIndex = url.length()
                 }
 
