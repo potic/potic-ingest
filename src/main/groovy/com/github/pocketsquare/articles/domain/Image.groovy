@@ -1,13 +1,9 @@
 package com.github.pocketsquare.articles.domain
 
 import groovy.transform.builder.Builder
-import org.springframework.data.annotation.Id
 
 @Builder
 class Image {
-
-    @Id
-    String id
 
     String pocketId
 

@@ -166,11 +166,11 @@ class ArticlesStorageService {
                 int endIndex
 
                 if (url.startsWith('http://')) {
-                    startIndex = 'http://'.length() + 1
+                    startIndex = 'http://'.length()
                 }
 
                 if (url.startsWith('https://')) {
-                    startIndex = 'https://'.length() + 1
+                    startIndex = 'https://'.length()
                 }
 
                 endIndex = url.indexOf('/', startIndex)
