@@ -92,7 +92,6 @@ class ArticlesStorageService {
                                 .givenUrl(it.given_url)
                                 .resolvedUrl(it.resolved_url)
                                 .title(it.resolved_title)
-                                .order(it.sort_id)
                                 .read(it.status == '1')
                                 .favorite(it.favorite == '1')
                                 .wordCount(Integer.parseInt(it.word_count))
@@ -171,6 +170,10 @@ class ArticlesStorageService {
 
                 if (url.startsWith('https://')) {
                     startIndex = 'https://'.length()
+                }
+
+                if (url.substring(startIndex).startsWith('www.')) {
+                    startIndex += 'www.'.length()
                 }
 
                 endIndex = url.indexOf('/', startIndex)

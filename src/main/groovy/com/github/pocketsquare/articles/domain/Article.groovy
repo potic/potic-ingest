@@ -22,7 +22,6 @@ class Article {
     boolean read
     boolean favorite
     Integer wordCount
-    Integer order
     Collection<String> tags
     Collection<String> authors
 
