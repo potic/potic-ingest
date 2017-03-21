@@ -136,7 +136,7 @@ class ArticlesStorageService {
                     offset += requestSize
                 } catch (e) {
                     log.warn("failed during ingesting articles for user with id=${userId} with offset=${offset} because of ${e.class}: ${e.message}", e)
-                    offset++
+                    offset += requestSize
                 } finally {
                     dashboard.userArticlesCount = articleRepository.countByUserId(userId)
                 }
