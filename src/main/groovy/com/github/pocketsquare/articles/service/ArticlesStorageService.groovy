@@ -146,13 +146,15 @@ class ArticlesStorageService {
                 if (json.empty) {
                     null
                 } else {
+                    def mainImageJson = json.values().min({ Integer.parseInt(it.image_id) })
+
                     Image.builder()
-                        .pocketId("${json.first().item_id}-${json.first().image_id}")
-                        .src(json.first().src)
-                        .width(json.first().width)
-                        .height(json.first().height)
-                        .credit(json.first().credit)
-                        .caption(json.first().caption)
+                        .pocketId("${mainImageJson.item_id}-${mainImageJson.image_id}")
+                        .src(mainImageJson.src)
+                        .width(mainImageJson.width)
+                        .height(mainImageJson.height)
+                        .credit(mainImageJson.credit)
+                        .caption(mainImageJson.caption)
                         .build()
                 }
             }
