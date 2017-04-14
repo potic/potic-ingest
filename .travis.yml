@@ -1,38 +1,31 @@
 sudo: required
-
 language: java
-
 services:
 - docker
-
 before_cache:
 - rm -f  $HOME/.gradle/caches/modules-2/modules-2.lock
 - rm -fr $HOME/.gradle/caches/*/plugin-resolution/
-
 cache:
   directories:
   - "$HOME/.gradle/caches/"
   - "$HOME/.gradle/wrapper/"
-
 before_install:
+- openssl aes-256-cbc -K $encrypted_2e67f4ceac70_key -iv $encrypted_2e67f4ceac70_iv
+  -in id_rsa.enc -out .travis/id_rsa -d
 - chmod +x gradlew
-
 install:
 - "./gradlew build jacocoTestReport --scan"
-
 after_success:
 - bash <(curl -s https://codecov.io/bash)
-
 before_script:
 - docker login -e="$DOCKER_EMAIL" -u="$DOCKER_USERNAME" -p="$DOCKER_PASSWORD"
-
 script:
 - export DOCKER_REPO=pocketsquare/pocket-square-articles
-- export TAG=`if [ "$TRAVIS_BRANCH" == "master" ]; then echo "latest"; else echo $TRAVIS_BRANCH | tr '/' '-' ; fi`
+- export TAG=`if [ "$TRAVIS_BRANCH" == "master" ]; then echo "latest"; else echo $TRAVIS_BRANCH
+  | tr '/' '-' ; fi`
 - docker build -t $DOCKER_REPO:travis-$TRAVIS_BUILD_NUMBER .
 - docker tag $DOCKER_REPO:travis-$TRAVIS_BUILD_NUMBER $DOCKER_REPO:$TAG
 - docker push $DOCKER_REPO
-
 env:
   global:
   - secure: pnKgn2/Basee644RSHCGUK9nHuZvX7m3d/rKuVhVgQ9uliwxH9E+my5MfwjTekYy7esm3dgzlxWe75Lztc4IOP1F6VMRfQzFxOZRhyhdF74wDWWpdWYAODnlnW64fWB6DpqpurgFmOvgD2Npo4W3fnEkXLDsEI2CFpxnxKnS9/2G6t92E8Q1MIfVxQTAoeZe0jyUlECLTvkEmWEZLNCjpZgRKQ2lPLxfeCW3YhmFklFpdgV0yYkbSTIuz7sgUj2yc1ibiHBW9WPVS+evNLXVE2epH5fw9N+PrpOi94A/TFuEu+6uQgUzOYZHABlNvYnTFUCQPcvAyhWv8ZPQoR2SV2QURAwa2mFE4eHJN4zixFWIeuetz/uHHgVjDrT66hSfRYewdsSshIAOqSQQfpQu04mXgYuCpJ/v8mUVQCIIJi9tQQ4SMG7hS2fc3NRVNwKsjNymu0nhGYQhf3nt69AiT7CN7SKJFNPFEsipnKNe4VtKdOk1WaMjGKv4/JH1KAcK4t+bWd2FOVNHZxmLis1Mt7AQp7zGfLA62XRpThMWfxtxhHZU0jk/+zL82muX5eyPZHbtsP3zuqU0jTxU2ralspWYeBuMwkcU9K8KePk29Rm3c40S/YQfx6/amnQ3kJorbnDls5922c49F4j8vGMgNHQ9AqKO7D5O6wE5A/0eKLM=
