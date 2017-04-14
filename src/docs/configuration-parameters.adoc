@@ -1,16 +1,4 @@
-= HOWTO: start service as docker container
-
-== Cleaning previously started container
-
-[source,shell]
-----
-docker ps -a
-docker kill pocket-square-articles; docker rm pocket-square-articles
-----
-
-== Configuration parameters
-
-Following environment variable are available for global service configuration:
+= Configuration parameters
 
 INGEST_REQUEST_SIZE - number of records requested from ingest service at once
 
@@ -32,10 +20,3 @@ ROOT_LOG_LEVEL - logging level for third-party libraries (default is INFO)
 
 POCKET_SQUARE_LOG_LEVEL - logging level for service code (default is INFO)
 
-== Start service
-
-[source,shell]
-----
-docker pull pocketsquare/pocket-square-articles:$TAG
-docker run -dit --name pocket-square-articles --link pocket-square-ingest --link pocket-square-mongo -e MONGO_PASSWORD=MONGO_PASSWORD -v /logs:/logs -p 28103:8080 pocketsquare/pocket-square-articles:$TAG
-----

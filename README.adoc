@@ -16,8 +16,10 @@ https://hub.docker.com/r/pocketsquare/pocket-square-articles/
 
 == Documentation
 
-link:src/docs/howto-start-docker.adoc[HOWTO: start service as docker container]
+link:src/main/scripts/deploy[HOWTO: start service as docker container]
 
 link:src/docs/howto-run-service.adoc[HOWTO: run service]
 
 link:src/docs/mongodb-setup.adoc[MongoDB setup]
+
+link:src/docs/configuration-parameters.adoc[Service configuration parameters]
