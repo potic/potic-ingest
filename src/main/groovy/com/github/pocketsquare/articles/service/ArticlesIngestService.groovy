@@ -15,15 +15,15 @@ import org.springframework.stereotype.Service
 
 @Service
 @Slf4j
-class ArticlesStorageService {
+class ArticlesIngestService {
 
     static final String INGEST_SERVICE_URL = 'http://pocket-square-ingest:5000/'
 
     static final Integer DEFAULT_REQUEST_SIZE = 100
-    static final Integer INGEST_REQUEST_SIZE = Integer.parseInt(System.getenv('INGEST_REQUEST_SIZE') ?: DEFAULT_REQUEST_SIZE.toString())
+    static final Integer INGEST_REQUEST_SIZE = Integer.parseInt(System.getenv('ARTICLES_INGEST_REQUEST_SIZE') ?: DEFAULT_REQUEST_SIZE.toString())
 
     static final String DEFAULT_SUSPEND_DURATION = '1h'
-    static final String SUSPEND_DURATION = System.getenv('SUSPEND_DURATION') ?: DEFAULT_SUSPEND_DURATION
+    static final String SUSPEND_DURATION = System.getenv('ARTICLES_INGEST_SUSPEND_DURATION') ?: DEFAULT_SUSPEND_DURATION
 
     @Autowired
     ArticleRepository articleRepository

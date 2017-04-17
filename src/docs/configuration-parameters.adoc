@@ -1,8 +1,10 @@
 = Configuration parameters
 
-INGEST_REQUEST_SIZE - number of records requested from ingest service at once
+ARTICLES_INGEST_REQUEST_SIZE - number of records requested from ingest service at once
 
-SUSPEND_DURATION - duration of job pause after all articles are loaded
+ARTICLES_INGEST_SUSPEND_DURATION - duration of job pause after all articles are loaded
+
+INGEST_JOB_KEEPER_SUSPEND_DURATION - duration of job pause after all users ingest jobs are checked
 
 MONGO_DATABASE_NAME - mongodb database name to use (default is pocketSquare)
 
