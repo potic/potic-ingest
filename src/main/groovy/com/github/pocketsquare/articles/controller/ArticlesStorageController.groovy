@@ -1,15 +1,10 @@
 package com.github.pocketsquare.articles.controller
 
-import com.github.pocketsquare.articles.service.ArticlesStorageService
+import com.github.pocketsquare.articles.service.ArticlesIngestService
 import groovy.util.logging.Slf4j
-import io.github.yermilov.kerivnyk.domain.Job
-import io.github.yermilov.kerivnyk.service.KerivnykService
 import org.springframework.beans.factory.annotation.Autowired
-import org.springframework.web.bind.annotation.CrossOrigin
 import org.springframework.web.bind.annotation.DeleteMapping
 import org.springframework.web.bind.annotation.PathVariable
-import org.springframework.web.bind.annotation.PostMapping
-import org.springframework.web.bind.annotation.ResponseBody
 import org.springframework.web.bind.annotation.RestController
 
 @RestController
@@ -17,24 +12,12 @@ import org.springframework.web.bind.annotation.RestController
 class ArticlesStorageController {
 
     @Autowired
-    ArticlesStorageService articlesStorageService
+    ArticlesIngestService articlesIngestService
 
-    @Autowired
-    KerivnykService kerivnykService
-
-    @CrossOrigin
-    @PostMapping(path = '/ingest/{userId}')
-    @ResponseBody Job ingestArticlesByUserId(@PathVariable String userId) {
-        log.info "Receive request to ingest articles of user with id=${userId}"
-
-        kerivnykService.asyncStartJob(articlesStorageService.ingestArticlesByUserIdJob(userId))
-    }
-
-    @CrossOrigin
     @DeleteMapping(path = '/article/byUserId/{userId}')
     void removeAllUserArticles(@PathVariable String userId) {
         log.info "Receive request to remove all articles of user with id=${userId} from database"
 
-        articlesStorageService.deleteByUserId(userId)
+        articlesIngestService.deleteByUserId(userId)
     }
 }

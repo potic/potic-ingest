@@ -16,10 +16,10 @@ task wrapper(type: Wrapper) {
 }
 
 repositories {
-    jcenter()
     maven {
         url 'https://dl.bintray.com/yermilov/yermilov-maven/'
     }
+    jcenter()
     mavenLocal()
 }
 
@@ -27,8 +27,8 @@ dependencies {
     compile 'org.springframework.boot:spring-boot-starter-web'
     compile 'org.springframework.data:spring-data-mongodb'
     compile 'org.springframework.boot:spring-boot-starter-data-rest'
-    
-    compile 'io.github.yermilov:kerivnyk:0.6.2'
+
+    compile 'io.github.yermilov:kerivnyk:0.7'
 
     compile 'org.codehaus.groovy:groovy-all'
 
