@@ -45,7 +45,7 @@ class ArticlesStorageService {
             int offset
 
             @Override
-            boolean canStart(Collection<Job> concurrentJobs) {
+            boolean canStart(boolean isNew, Collection<Job> concurrentJobs) {
                 concurrentJobs.find({ Job job -> job.name == this.name }) == null
             }
 
@@ -58,8 +58,8 @@ class ArticlesStorageService {
                 requestSize = INGEST_REQUEST_SIZE
                 offset = 0
 
-                dashboard.userId = userId
-                dashboard.userArticlesCount = articleRepository.countByUserId(userId)
+                storage.userId = userId
+                storage.userArticlesCount = articleRepository.countByUserId(userId)
             }
 
             @Override
@@ -137,7 +137,7 @@ class ArticlesStorageService {
                     log.warn("failed during ingesting articles for user with id=${userId} with offset=${offset} because of ${e.class}: ${e.message}", e)
                     offset += requestSize
                 } finally {
-                    dashboard.userArticlesCount = articleRepository.countByUserId(userId)
+                    storage.userArticlesCount = articleRepository.countByUserId(userId)
                 }
             }
 
