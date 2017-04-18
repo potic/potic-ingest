@@ -15,7 +15,7 @@ import org.springframework.stereotype.Service
 @Slf4j
 class IngestJobKeeperService {
 
-    static final String USERS_SERVICE_URL = 'http://pocket-square-users:28101/'
+    static final String USERS_SERVICE_URL = 'http://pocket-square-users:8080/'
 
     static final String DEFAULT_SUSPEND_DURATION = '10min'
     static final String SUSPEND_DURATION = System.getenv('INGEST_JOB_KEEPER_SUSPEND_DURATION') ?: DEFAULT_SUSPEND_DURATION
