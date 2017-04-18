@@ -70,11 +70,11 @@ class IngestJobKeeperService {
                                 return user
                             }
                             .each { def user ->
-                                Job activeJob = activeJobs.find { Job job -> job.storage.userId == user.id }
+                                Job activeJob = activeJobs.find { Job job -> job.storage?.userId == user.id }
                                 if (activeJob != null) {
                                     log.info "job for user with id=${user.id} is active"
                                 } else {
-                                    Job abortedJob = allJobs.findAll { Job job -> job.storage.userId == user.id && job.status == JobStatus.ABORTED.toString() }
+                                    Job abortedJob = allJobs.findAll { Job job -> job.storage?.userId == user.id && job.status == JobStatus.ABORTED.toString() }
                                     if (abortedJob != null) {
                                         log.warn "job for user with id=${user.id} was aborted, restarting it..."
                                         kerivnykService.restartJobFrom(articlesIngestService.ingestArticlesByUserIdJob(user.id), abortedJob)
