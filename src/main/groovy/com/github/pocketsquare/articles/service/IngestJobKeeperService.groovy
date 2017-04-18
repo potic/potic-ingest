@@ -67,6 +67,7 @@ class IngestJobKeeperService {
                             .collect { def user ->
                                 String userHref = user['_links']['self']['href']
                                 user.id = userHref.substring(userHref.lastIndexOf('/') + 1, userHref.length() - 1)
+                                return user
                             }
                             .each { def user ->
                                 Job activeJob = activeJobs.find { Job job -> job.storage.userId == user.id }
