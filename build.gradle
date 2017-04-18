@@ -28,7 +28,7 @@ dependencies {
     compile 'org.springframework.data:spring-data-mongodb'
     compile 'org.springframework.boot:spring-boot-starter-data-rest'
 
-    compile 'io.github.yermilov:kerivnyk:0.7'
+    compile 'io.github.yermilov:kerivnyk:0.7.1'
 
     compile 'org.codehaus.groovy:groovy-all'
 
