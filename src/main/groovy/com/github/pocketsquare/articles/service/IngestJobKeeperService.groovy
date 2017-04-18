@@ -60,9 +60,10 @@ class IngestJobKeeperService {
                         request.uri.path = '/user'
                     }
 
-                    log.warn("response for user request is ${new String(response)}")
+                    // temporary fix as response is byte array for some reason
+                    def jsonResponse = jsonSlurper.parse(response)
 
-                    response['_embedded']['user']
+                    jsonResponse['_embedded']['user']
                             .collect { def user ->
                                 String userHref = user['_links']['self']['href']
                                 user.id = userHref.substring(userHref.lastIndexOf('/') + 1, userHref.length() - 1)
