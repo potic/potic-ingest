@@ -48,6 +48,9 @@ class IngestJobKeeperService {
                 usersService = HttpBuilder.configure {
                     request.uri = USERS_SERVICE_URL
                 }
+
+                storage['job restarts performed'] = 0
+                storage['job starts performed'] = 0
             }
 
             @Override
@@ -63,23 +66,28 @@ class IngestJobKeeperService {
                     // temporary fix as response is byte array for some reason
                     def jsonResponse = jsonSlurper.parse(response)
 
+                    storage['active ingest jobs'] = 0
+
                     jsonResponse['_embedded']['user']
                             .collect { def user ->
                                 String userHref = user['_links']['self']['href']
-                                user.id = userHref.substring(userHref.lastIndexOf('/') + 1, userHref.length() - 1)
+                                user.id = userHref.substring(userHref.lastIndexOf('/') + 1)
                                 return user
                             }
                             .each { def user ->
                                 Job activeJob = activeJobs.find { Job job -> job.storage?.userId == user.id }
                                 if (activeJob != null) {
                                     log.info "job for user with id=${user.id} is active"
+                                    storage['active ingest jobs']++
                                 } else {
                                     Job abortedJob = allJobs.findAll { Job job -> job.storage?.userId == user.id && job.status == JobStatus.ABORTED.toString() }
                                     if (abortedJob != null) {
                                         log.warn "job for user with id=${user.id} was aborted, restarting it..."
+                                        storage['job restarts performed']++
                                         kerivnykService.restartJobFrom(articlesIngestService.ingestArticlesByUserIdJob(user.id), abortedJob)
                                     } else {
                                         log.warn "job for user with id=${user.id} is not active, starting it..."
+                                        storage['job starts performed']++
                                         kerivnykService.startJob(articlesIngestService.ingestArticlesByUserIdJob(user.id))
                                     }
                                 }
