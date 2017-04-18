@@ -60,7 +60,7 @@ class IngestJobKeeperService {
                         request.uri.path = '/user'
                     }
 
-                    log.warn("response for user request is $response")
+                    log.warn("response for user request is ${new String(response)}")
 
                     response['_embedded']['user']
                             .collect { def user ->
