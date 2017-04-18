@@ -7,7 +7,6 @@ import io.github.yermilov.kerivnyk.domain.Job
 import io.github.yermilov.kerivnyk.domain.JobStatus
 import io.github.yermilov.kerivnyk.service.DurableJob
 import io.github.yermilov.kerivnyk.service.KerivnykService
-import org.jsoup.nodes.Document
 import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.stereotype.Service
 
@@ -61,10 +60,9 @@ class IngestJobKeeperService {
                         request.uri.path = '/user'
                     }
 
-                    // temporary fix as response is jsoup document for some reason
-                    def jsonResponse = jsonSlurper.parseText((response as Document).body().html())
+                    log.warn("response for user request is $response")
 
-                    jsonResponse['_embedded']['user']
+                    response['_embedded']['user']
                             .collect { def user ->
                                 String userHref = user['_links']['self']['href']
                                 user.id = userHref.substring(userHref.lastIndexOf('/') + 1, userHref.length() - 1)
