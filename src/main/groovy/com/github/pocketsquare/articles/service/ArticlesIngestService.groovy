@@ -161,36 +161,39 @@ class ArticlesIngestService {
                         .build()
                 }
             }
-
-            String extractSource(json) {
-                String url = json.resolved_url
-
-                int startIndex = 0
-                int endIndex
-
-                if (url.startsWith('http://')) {
-                    startIndex = 'http://'.length()
-                }
-
-                if (url.startsWith('https://')) {
-                    startIndex = 'https://'.length()
-                }
-
-                if (url.substring(startIndex).startsWith('www.')) {
-                    startIndex += 'www.'.length()
-                }
-
-                if (url.substring(startIndex).startsWith('m.')) {
-                    startIndex += 'm.'.length()
-                }
-
-                endIndex = url.indexOf('/', startIndex)
-                if (endIndex < 0) {
-                    endIndex = url.length()
-                }
-
-                return url.substring(startIndex, endIndex)
-            }
         }
+    }
+
+    String extractSource(json) {
+        String url = json.given_url ?: json.resolved_url
+        if (url == null) {
+            return null
+        }
+
+        int startIndex = 0
+        int endIndex
+
+        if (url.startsWith('http://')) {
+            startIndex = 'http://'.length()
+        }
+
+        if (url.startsWith('https://')) {
+            startIndex = 'https://'.length()
+        }
+
+        if (url.substring(startIndex).startsWith('www.')) {
+            startIndex += 'www.'.length()
+        }
+
+        if (url.substring(startIndex).startsWith('m.')) {
+            startIndex += 'm.'.length()
+        }
+
+        endIndex = url.indexOf('/', startIndex)
+        if (endIndex < 0) {
+            endIndex = url.length()
+        }
+
+        return url.substring(startIndex, endIndex)
     }
 }
