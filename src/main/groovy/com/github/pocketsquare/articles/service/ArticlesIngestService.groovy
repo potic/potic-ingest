@@ -72,16 +72,8 @@ class ArticlesIngestService {
                         request.uri.query = [ count: INGEST_REQUEST_SIZE, offset: 0, since: storage.requestSince ]
                     }
 
-                    def jsonResponse = null
-                    try {
-                        // temporary fix as response is jsoup document for some reason
-                        jsonResponse = jsonSlurper.parseText((response as Document).body().html())
-                    } catch (e) {
-                        log.warn("failed during ingesting articles for user with id=${userId} since ${storage.requestSince} because of ${e.class.name}: ${e.message}", e)
-                        log.warn(response)
-                        throw e
-                    }
-
+                    // temporary fix as response is jsoup document for some reason
+                    def jsonResponse = jsonSlurper.parseText((response as Document).body().html())
 
                     Collection<Article> articles = jsonResponse.values().collect({
                         Article alreadyIngestedArticle = articleRepository.findOneByUserIdAndPocketId(userId, it.resolved_id)
