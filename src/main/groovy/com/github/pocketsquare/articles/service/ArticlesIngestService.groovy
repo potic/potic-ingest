@@ -140,7 +140,7 @@ class ArticlesIngestService {
                         }.max()
                     }
                 } catch (e) {
-                    log.warn("failed during ingesting articles for user with id=${userId} since ${storage.requestSince} because of ${e.class}: ${e.message}", e)
+                    log.warn("failed during ingesting articles for user with id=${userId} since ${storage.requestSince} because of ${e.class.name}: ${e.message}", e)
                 } finally {
                     storage['total user articles count'] = articleRepository.countByUserId(userId)
                     suspend(SUSPEND_DURATION)
