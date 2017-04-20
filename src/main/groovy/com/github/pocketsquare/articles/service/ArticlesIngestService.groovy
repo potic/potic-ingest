@@ -87,7 +87,7 @@ class ArticlesIngestService {
                                 .title(it.resolved_title)
                                 .read(it.status == '1')
                                 .favorite(it.favorite == '1')
-                                .wordCount(Integer.parseInt(it.word_count))
+                                .wordCount(it.word_count != null ? Integer.parseInt(it.word_count) : 0)
                                 .tags(it.tags?.keySet() ?: [])
                                 .authors(it.authors?.values()?.collect({ it.name }) ?: [])
                                 .source(extractSource(it))
@@ -135,7 +135,7 @@ class ArticlesIngestService {
                     if (!articles.empty) {
                         storage.requestSince = articles.collectMany { Article article ->
                             [ article.timeAdded, article.timeFavored, article.timeRead, article.timeUpdated ]
-                        }.max() + 1
+                        }.max()
                     }
                 } catch (e) {
                     log.warn("failed during ingesting articles for user with id=${userId} since ${storage.requestSince} because of ${e.class}: ${e.message}", e)
