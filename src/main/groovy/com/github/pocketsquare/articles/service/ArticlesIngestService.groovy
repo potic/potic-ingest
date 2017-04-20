@@ -53,7 +53,7 @@ class ArticlesIngestService {
                 }
 
                 storage.userId = userId
-                storage.requestSince = storage.requestSince ?: 0
+                storage.requestSince = storage.requestSince != null ? storage.requestSince : 0
 
                 storage['total user articles count'] = articleRepository.countByUserId(userId)
                 storage['total articles metadata ingested'] = storage['total articles metadata ingested'] ?: 0
@@ -108,7 +108,9 @@ class ArticlesIngestService {
                     articleRepository.save existingArticles
                     storage['total articles metadata updated'] += existingArticles.size()
 
-                    Collection<Article> articlesWithoutContent = articles.findAll({ Article article -> article.content == null })
+                    Collection<Article> articlesWithoutContent = articles.findAll({ Article article ->
+                        article.content == null && (article.givenUrl != null || article.resolvedUrl != null)
+                    })
                     log.info "ingesting content of ${articlesWithoutContent.size()} articles for user with id=${userId}"
                     articlesWithoutContent.each { Article article ->
                         try {
