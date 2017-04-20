@@ -9,6 +9,7 @@ import groovyx.net.http.HttpBuilder
 import io.github.yermilov.kerivnyk.domain.Job
 import io.github.yermilov.kerivnyk.service.DurableJob
 import org.jsoup.Jsoup
+import org.jsoup.nodes.Document
 import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.stereotype.Service
 
@@ -66,13 +67,13 @@ class ArticlesIngestService {
                 try {
                     log.info "requesting ${INGEST_REQUEST_SIZE} articles for user with id=${userId} since ${storage.requestSince}"
 
-                    Map jsonResponse = ingestService.get(Map) {
+                    def response = ingestService.get {
                         request.uri.path = "/fetch/${userId}"
                         request.uri.query = [ count: INGEST_REQUEST_SIZE, offset: 0, since: storage.requestSince ]
                     }
 
                     // temporary fix as response is jsoup document for some reason
-                    // def jsonResponse = jsonSlurper.parseText((response as Document).body().html())
+                    def jsonResponse = jsonSlurper.parseText((response as Document).body().html())
 
                     Collection<Article> articles = jsonResponse.values().collect({
                         Article alreadyIngestedArticle = articleRepository.findOneByUserIdAndPocketId(userId, it.resolved_id)
