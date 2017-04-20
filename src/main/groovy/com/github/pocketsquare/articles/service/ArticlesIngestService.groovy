@@ -132,9 +132,11 @@ class ArticlesIngestService {
                         articleRepository.save article
                     }
 
-                    storage.requestSince = articles.collectMany { Article article ->
-                        [ article.timeAdded, article.timeFavored, article.timeRead, article.timeUpdated ]
-                    }.max()
+                    if (!articles.empty) {
+                        storage.requestSince = articles.collectMany { Article article ->
+                            [ article.timeAdded, article.timeFavored, article.timeRead, article.timeUpdated ]
+                        }.max() + 1
+                    }
                 } catch (e) {
                     log.warn("failed during ingesting articles for user with id=${userId} since ${storage.requestSince} because of ${e.class}: ${e.message}", e)
                 } finally {
