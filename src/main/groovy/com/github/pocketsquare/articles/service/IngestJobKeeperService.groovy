@@ -40,7 +40,7 @@ class IngestJobKeeperService {
 
             @Override
             boolean canStart(boolean isNew, Collection<Job> concurrentJobs) {
-                concurrentJobs.find({ Job job -> job.name == this.name }) == null
+                isNew && concurrentJobs.find({ Job job -> job.name == this.name }) == null
             }
 
             @Override
@@ -75,6 +75,7 @@ class IngestJobKeeperService {
                                 return user
                             }
                             .each { def user ->
+                                // TODO: check job ids
                                 Job activeJob = activeJobs.find { Job job -> job.storage?.userId == user.id }
                                 if (activeJob != null) {
                                     log.info "job for user with id=${user.id} is active"

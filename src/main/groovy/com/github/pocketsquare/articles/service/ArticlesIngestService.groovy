@@ -9,7 +9,6 @@ import groovyx.net.http.HttpBuilder
 import io.github.yermilov.kerivnyk.domain.Job
 import io.github.yermilov.kerivnyk.service.DurableJob
 import org.jsoup.Jsoup
-import org.jsoup.nodes.Document
 import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.stereotype.Service
 
@@ -22,7 +21,7 @@ class ArticlesIngestService {
     static final Integer DEFAULT_REQUEST_SIZE = 100
     static final Integer INGEST_REQUEST_SIZE = Integer.parseInt(System.getenv('ARTICLES_INGEST_REQUEST_SIZE') ?: DEFAULT_REQUEST_SIZE.toString())
 
-    static final String DEFAULT_SUSPEND_DURATION = '1h'
+    static final String DEFAULT_SUSPEND_DURATION = '30sec'
     static final String SUSPEND_DURATION = System.getenv('ARTICLES_INGEST_SUSPEND_DURATION') ?: DEFAULT_SUSPEND_DURATION
 
     @Autowired
@@ -41,9 +40,6 @@ class ArticlesIngestService {
 
             HttpBuilder ingestService
 
-            int requestSize
-            int offset
-
             @Override
             boolean canStart(boolean isNew, Collection<Job> concurrentJobs) {
                 concurrentJobs.find({ Job job -> job.name == this.name }) == null
@@ -55,32 +51,28 @@ class ArticlesIngestService {
                     request.uri = INGEST_SERVICE_URL
                 }
 
-                requestSize = INGEST_REQUEST_SIZE
-                offset = 0
-
                 storage.userId = userId
-                storage.userArticlesCount = articleRepository.countByUserId(userId)
+                storage.requestSince = storage.requestSince ?: 0
+
+                storage['total user articles count'] = articleRepository.countByUserId(userId)
+                storage['total articles metadata ingested'] = storage['total articles metadata ingested'] ?: 0
+                storage['total articles metadata updated'] = storage['total articles metadata updated'] ?: 0
+                storage['total articles content loaded'] = storage['total articles content loaded'] ?: 0
+                storage['total articles content load failed'] = storage['total articles content load failed'] ?: 0
             }
 
             @Override
             void act() {
                 try {
-                    log.info "requesting ${requestSize} articles for user with id=${userId} with offset=${offset}"
+                    log.info "requesting ${INGEST_REQUEST_SIZE} articles for user with id=${userId} since ${storage.requestSince}"
 
-                    def response = ingestService.get {
+                    Map jsonResponse = ingestService.get(Map) {
                         request.uri.path = "/fetch/${userId}"
-                        request.uri.query = [ count: requestSize, offset: offset ]
+                        request.uri.query = [ count: INGEST_REQUEST_SIZE, offset: 0, since: storage.requestSince ]
                     }
 
                     // temporary fix as response is jsoup document for some reason
-                    def jsonResponse = jsonSlurper.parseText((response as Document).body().html())
-
-                    if (jsonResponse.empty) {
-                        log.info "all articles ingested so far for user with id=${userId}"
-                        offset = 0
-                        suspend(SUSPEND_DURATION)
-                        return
-                    }
+                    // def jsonResponse = jsonSlurper.parseText((response as Document).body().html())
 
                     Collection<Article> articles = jsonResponse.values().collect({
                         Article alreadyIngestedArticle = articleRepository.findOneByUserIdAndPocketId(userId, it.resolved_id)
@@ -108,10 +100,12 @@ class ArticlesIngestService {
                                 .build()
                     })
                     log.info "received ${articles.size()} articles for user with id=${userId}"
+                    storage['total articles metadata ingested'] += articles.size()
 
                     Collection<Article> existingArticles = articles.findAll({ Article article -> article.id != null })
                     log.info "updating metadata of ${existingArticles.size()} existing articles for user with id=${userId}"
                     articleRepository.save existingArticles
+                    storage['total articles metadata updated'] += existingArticles.size()
 
                     Collection<Article> articlesWithoutContent = articles.findAll({ Article article -> article.content == null })
                     log.info "ingesting content of ${articlesWithoutContent.size()} articles for user with id=${userId}"
@@ -119,25 +113,32 @@ class ArticlesIngestService {
                         try {
                             log.info "trying to load ${article.givenUrl} for user with id=${userId}"
                             article.content = Jsoup.connect(article.givenUrl).get().html()
+                            storage['total articles content loaded']++
                         } catch (e) {
                             log.warn "failed to load ${article.givenUrl} for user with id=${userId}"
+                            storage['total articles content load failed']++
                         }
                         if (article.content == null && article.resolvedUrl != article.givenUrl) {
                             try {
                                 log.info "trying to load ${article.resolvedUrl} for user with id=${userId}"
                                 article.content = Jsoup.connect(article.resolvedUrl).get().html()
+                                storage['total articles content loaded']++
                             } catch (e) {
                                 log.warn "failed to load ${article.resolvedUrl} for user with id=${userId}"
+                                storage['total articles content load failed']++
                             }
                         }
                         articleRepository.save article
                     }
-                    offset += requestSize
+
+                    storage.requestSince = articles.collectMany { Article article ->
+                        [ article.timeAdded, article.timeFavored, article.timeRead, article.timeUpdated ]
+                    }.max()
                 } catch (e) {
-                    log.warn("failed during ingesting articles for user with id=${userId} with offset=${offset} because of ${e.class}: ${e.message}", e)
-                    offset += requestSize
+                    log.warn("failed during ingesting articles for user with id=${userId} since ${storage.requestSince} because of ${e.class}: ${e.message}", e)
                 } finally {
-                    storage.userArticlesCount = articleRepository.countByUserId(userId)
+                    storage['total user articles count'] = articleRepository.countByUserId(userId)
+                    suspend(SUSPEND_DURATION)
                 }
             }
 
