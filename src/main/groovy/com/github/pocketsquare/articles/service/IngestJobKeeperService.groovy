@@ -81,7 +81,12 @@ class IngestJobKeeperService {
                                     log.info "job for user with id=${user.id} is active"
                                     storage['active ingest jobs']++
                                 } else {
-                                    Job abortedJob = allJobs.findAll { Job job -> job.storage?.userId == user.id && job.status == JobStatus.ABORTED.toString() }
+                                    Job abortedJob = allJobs
+                                            .findAll({ Job job ->
+                                                job.storage?.userId == user.id && job.status == JobStatus.ABORTED.toString()
+                                            })
+                                            .max({ Job job -> job.startTimestamp })
+
                                     if (abortedJob != null) {
                                         log.warn "job for user with id=${user.id} was aborted, restarting it..."
                                         storage['job restarts performed']++
