@@ -40,6 +40,7 @@ class ArticlesIngestService {
         new DurableJob("ingest articles for user-id=${userId}") {
 
             HttpBuilder ingestService
+            String detailType
 
             @Override
             boolean canStart(boolean isNew, Collection<Job> concurrentJobs) {
@@ -51,6 +52,8 @@ class ArticlesIngestService {
                 ingestService = HttpBuilder.configure {
                     request.uri = INGEST_SERVICE_URL
                 }
+
+                detailType = 'complete'
 
                 storage.userId = userId
                 storage.requestSince = storage.requestSince != null ? storage.requestSince : 0
@@ -69,7 +72,7 @@ class ArticlesIngestService {
 
                     def response = ingestService.get {
                         request.uri.path = "/fetch/${userId}"
-                        request.uri.query = [ count: INGEST_REQUEST_SIZE, offset: 0, since: storage.requestSince ]
+                        request.uri.query = [ detailType: detailType, count: INGEST_REQUEST_SIZE, offset: 0, since: storage.requestSince ]
                     }
 
                     // temporary fix as response is jsoup document for some reason
@@ -139,8 +142,10 @@ class ArticlesIngestService {
                             [ article.timeAdded, article.timeFavored, article.timeRead, article.timeUpdated ]
                         }.max()
                     }
+                    detailType = 'complete'
                 } catch (e) {
                     log.warn("failed during ingesting articles for user with id=${userId} since ${storage.requestSince} because of ${e.class.name}: ${e.message}", e)
+                    detailType = 'simple'
                 } finally {
                     storage['total user articles count'] = articleRepository.countByUserId(userId)
                     suspend(SUSPEND_DURATION)
