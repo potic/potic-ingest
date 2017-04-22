@@ -40,7 +40,6 @@ class ArticlesIngestService {
         new DurableJob("ingest articles for user-id=${userId}") {
 
             HttpBuilder ingestService
-            String detailType
 
             @Override
             boolean canStart(boolean isNew, Collection<Job> concurrentJobs) {
@@ -52,8 +51,6 @@ class ArticlesIngestService {
                 ingestService = HttpBuilder.configure {
                     request.uri = INGEST_SERVICE_URL
                 }
-
-                detailType = 'complete'
 
                 storage.userId = userId
                 storage.requestSince = storage.requestSince != null ? storage.requestSince : 0
@@ -72,7 +69,7 @@ class ArticlesIngestService {
 
                     def response = ingestService.get {
                         request.uri.path = "/fetch/${userId}"
-                        request.uri.query = [ detailType: detailType, count: INGEST_REQUEST_SIZE, offset: 0, since: storage.requestSince ]
+                        request.uri.query = [ count: INGEST_REQUEST_SIZE, since: storage.requestSince ]
                     }
 
                     def jsonResponse = toJson(response)
