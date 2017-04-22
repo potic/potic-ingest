@@ -75,8 +75,7 @@ class ArticlesIngestService {
                         request.uri.query = [ detailType: detailType, count: INGEST_REQUEST_SIZE, offset: 0, since: storage.requestSince ]
                     }
 
-                    // temporary fix as response is jsoup document for some reason
-                    def jsonResponse = jsonSlurper.parseText((response as Document).body().html())
+                    def jsonResponse = toJson(response)
 
                     Collection<Article> articles = jsonResponse.values().collect({
                         Article alreadyIngestedArticle = articleRepository.findOneByUserIdAndPocketId(userId, it.resolved_id)
@@ -142,14 +141,23 @@ class ArticlesIngestService {
                             [ article.timeAdded, article.timeFavored, article.timeRead, article.timeUpdated ]
                         }.max()
                     }
-                    detailType = 'complete'
                 } catch (e) {
                     log.warn("failed during ingesting articles for user with id=${userId} since ${storage.requestSince} because of ${e.class.name}: ${e.message}", e)
-                    detailType = 'simple'
                 } finally {
                     storage['total user articles count'] = articleRepository.countByUserId(userId)
                     suspend(SUSPEND_DURATION)
                 }
+            }
+
+            def toJson(def response) {
+                // temporary fix as response is jsoup document for some reason
+                String responseAsString = (response as Document).body().html()
+
+                // temporary fix as these substrings break json parsing
+                responseAsString = responseAsString.replace("<script src=\"\\&quot;https://d3js.org/d3.v4.js\\&quot;\"></script>", "")
+                responseAsString = responseAsString.replace("<script src=\"\\&quot;https://unpkg.com/d3-horizon-chart\\&quot;\"></script>", "")
+
+                return jsonSlurper.parseText(responseAsString)
             }
 
             Image extractMainImage(json) {
