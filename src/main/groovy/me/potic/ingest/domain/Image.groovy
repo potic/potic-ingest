@@ -1,4 +1,4 @@
-package com.github.pocketsquare.articles.domain
+package me.potic.ingest.domain
 
 import groovy.transform.builder.Builder
 

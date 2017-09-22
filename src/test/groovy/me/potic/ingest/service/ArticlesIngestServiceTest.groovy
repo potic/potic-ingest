@@ -1,4 +1,4 @@
-package com.github.pocketsquare.articles.service
+package me.potic.ingest.service
 
 import spock.lang.Specification
 import spock.lang.Unroll

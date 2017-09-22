@@ -1,4 +1,4 @@
-package com.github.pocketsquare.articles.service
+package me.potic.ingest.service
 
 import groovy.json.JsonSlurper
 import groovy.util.logging.Slf4j

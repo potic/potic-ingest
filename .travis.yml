@@ -15,11 +15,11 @@ cache:
   - "$HOME/.gradle/wrapper/"
 
 before_install:
-- openssl aes-256-cbc -K $encrypted_2e67f4ceac70_key -iv $encrypted_2e67f4ceac70_iv -in id_rsa.enc -out .travis/id_rsa -d
+- tar xvf deployment_keys.tar
 - chmod +x gradlew
 
 install:
-- "./gradlew build jacocoTestReport --scan"
+- "./gradlew build jacocoTestReport --scan -PpatchVersion=$TRAVIS_BUILD_NUMBER"
 
 after_success:
 - bash <(curl -s https://codecov.io/bash)
@@ -27,22 +27,18 @@ after_success:
 before_script:
 - docker login -e="$DOCKER_EMAIL" -u="$DOCKER_USERNAME" -p="$DOCKER_PASSWORD"
 - eval "$(ssh-agent -s)"
-- chmod 600 .travis/id_rsa
-- ssh-add .travis/id_rsa
+- chmod 600 deployment_keys/deploy_test
+- ssh-add deployment_keys/deploy_test
+- chmod 600 deployment_keys/deploy_prod
+- ssh-add deployment_keys/deploy_prod
 
 script:
-- export DOCKER_REPO=pocketsquare/pocket-square-articles
+- export DOCKER_REPO=potic/potic-ingest
 - export TAG=`if [ "$TRAVIS_BRANCH" == "master" ]; then echo "latest"; else echo $TRAVIS_BRANCH | tr '/' '-' ; fi`
+- export TAG_VERSION=`cat VERSION`.$TRAVIS_BUILD_NUMBER
 - docker build -t $DOCKER_REPO:travis-$TRAVIS_BUILD_NUMBER .
 - docker tag $DOCKER_REPO:travis-$TRAVIS_BUILD_NUMBER $DOCKER_REPO:$TAG
+- docker tag $DOCKER_REPO:travis-$TRAVIS_BUILD_NUMBER $DOCKER_REPO:$TAG_VERSION
 - docker push $DOCKER_REPO
-- if [ "$TRAVIS_BRANCH" == "master" ]; then ssh -o "StrictHostKeyChecking no" "$DEPLOY_USER"@"$DEPLOY_HOST" MONGO_PASSWORD=$MONGO_PASSWORD 'bash -s' < src/main/scripts/deploy.sh; fi
-
-env:
-  global:
-  - secure: pnKgn2/Basee644RSHCGUK9nHuZvX7m3d/rKuVhVgQ9uliwxH9E+my5MfwjTekYy7esm3dgzlxWe75Lztc4IOP1F6VMRfQzFxOZRhyhdF74wDWWpdWYAODnlnW64fWB6DpqpurgFmOvgD2Npo4W3fnEkXLDsEI2CFpxnxKnS9/2G6t92E8Q1MIfVxQTAoeZe0jyUlECLTvkEmWEZLNCjpZgRKQ2lPLxfeCW3YhmFklFpdgV0yYkbSTIuz7sgUj2yc1ibiHBW9WPVS+evNLXVE2epH5fw9N+PrpOi94A/TFuEu+6uQgUzOYZHABlNvYnTFUCQPcvAyhWv8ZPQoR2SV2QURAwa2mFE4eHJN4zixFWIeuetz/uHHgVjDrT66hSfRYewdsSshIAOqSQQfpQu04mXgYuCpJ/v8mUVQCIIJi9tQQ4SMG7hS2fc3NRVNwKsjNymu0nhGYQhf3nt69AiT7CN7SKJFNPFEsipnKNe4VtKdOk1WaMjGKv4/JH1KAcK4t+bWd2FOVNHZxmLis1Mt7AQp7zGfLA62XRpThMWfxtxhHZU0jk/+zL82muX5eyPZHbtsP3zuqU0jTxU2ralspWYeBuMwkcU9K8KePk29Rm3c40S/YQfx6/amnQ3kJorbnDls5922c49F4j8vGMgNHQ9AqKO7D5O6wE5A/0eKLM=
-  - secure: gFsPtsHXUz71jNY91eC9B/jvTf5+6kAAEMRXWwmbYv609EawltlssrmvWpQAYtOyOkDIlxrUmvVnczw29x+ng0STCiZLe9JfO8T8ycc/iMKEDnxumvcte+DtGBI5Ig9uAF8ayEH0awlA5zL+J5qrCzF9k4FF8VrZZmRhD1wu3mxCSY4vv3UfWSqqwMBGuq/CUW7Q9rEDr0Y1lvoiSqmgWLdjKFj1zssHjLipidk1rPnPNm/vud0tYc+SYifw2iLelzgYBubZ30JZf4somSbJneJyERmBXRowIP4+c4Zco7O8Uw4qPb/Nj5ikJwaUr3GncXwP4dwYBHmChpxsEb4tbKCuVD8UkbkyegWYZcun5GXM75jnQ7XATzedyb4mBnPSUMiVlko1Dg84fZMNBp08Eocq8G0qa6jmhK3O3QK553c2NLX1XQp6afT1BXbsFe/0n+cjeCBZOSQ745B89gfCrj+l4uxQOZV5Fhxocb/3OoQmAsAgGznfikZarIh/V64OZlhViHMDyftfzahuAM1SD61Wd721iUKhefGhvI+xYZzePBe2fOqU1oMLZhHvut24WDj9nd64plE5JSL6nW3ApbDWvwbu+Gho20SDah9FA1zJRMakhOgs00lJJcbN8P1fF/azMyCy/Bp33gfOsPNz8LnehNXvVOU9zBBkebX7uz0=
-  - secure: D4kJTnY+WZ/UnH+T2PJA0d1NGqhLSPChGqQh9etuu/90sCvH26CssT4siyfVpwKiDc0d7myLX3V1DaRyZ9FIMylWY8jQSh9CYR5mUd0fOT9JNPo7YxdE5FgNapxl0k2ClAuCWIy7tLpcevJTDuLd8JXy+K5PhAd7HYOAlq3NlfEQS/BkmO8T8SwRcdgVnV6J1Z1znTpm3iCgKGSQGFGJ0Pe/Rw253ODj2a3GAl+Ynu4GP/Iv6QXQ8qedfzzA2VWDphAV3Ifw4SChXRHhuddmicfkPRVsAhwP0vr3uVuCiifhumidY2Vh9OqIO3wwgapa8hoZn4rKrwRGfB2cim4mxWzEPXb1NR1plvG2EKQVr6akp2+QgplYJEp4gdVM1K731zq8QqLDzgunxO16kLq8Ny7Yw+zc7PRxYY7MIurH3eBpo8UzW1mabvslpU5On54mgQGLq+DZ9VxYbIkfYwmG9V35TQXPtWqRMhyJvy7XofTe6Xuf9w3gVwcX4K7kGUlbdFZBCCcI9geIbeeIzjNA4jJDU2y6uXqXzi7ZgQpAyxrrD/8MJvTTUToryY6YbcZ6wXWi0w62dOS5UH8R3iLP7wR2jooUyQA0PJ5XjLZeBKi6rvhInbSvMFEaHXHhcnh4KBsJKjLcoVONDSlktv0peEt+UOVbEu2AVtTFTOIr58Y=
-  - secure: hsYEzPAgLaZuyPR5MmmxXr4pV/rptHPCU+tJ2tf+L/9PbdtaHWtDFOTNWKYuBA8THoWbtukamMMLmr/RDW6pRrs85g7nHwRRGz8QK9P4XCVI4R9QxBggsAFaoQOSqIL9na+/iRgUMDxoY+5lclmUEC/CQf0+Pu7psN5xoXlUSrOQKu6gUM6HgxN7cKSQyCT3DRh7weZOY2GCddDyNm3X/MvmWfboXYQeTSGbRPOcxA5U8kRIYNNPxlao77iBk8YrBLzl6jE4PWwleXpShA/O3INQqqpllBDeJTDdGgfgGdYi2oBsoE6fmVvQ85k2slltCYGBlnIBaFEriK7mTy6Qqv3rvYgiUsRoinBNuRmk6HpA3EtNqmCCJi4VLzPCLdPg/vqQvzpc6dnSUyac3CF6B4qF+3LEcBzK8w6Yiyizo1ToarGhG3mwYHEGDLyVm/+xoYBjpEGcq2MFHuhfUTWDVmxeX0I25or3E0+lPGQAPieLNGG/Csl8bh+pFHe+Kis+bTg3CAwJkJqawo72rlK+5BAbVeiaUuwHyHZQFz8giqjxmcCn85z1or26aGElI1RXtXgWX+KK+7A4iGyENkAm+UDaja7I9j2KKQinLyj8rcu9Dg/bU5pjomIOeyLl5oXK7wUaART0SwopWAznLyA5D38jVFQmcueL8Y5TxKqUh/k=
-  - secure: r2rZI/KT33zGrJNohATSmqFcV4FRhwbTAXXk0oN33hS8oMCnhq/8h0ddnLJCpZ7y5XdM0FsNTT8gz74xidiXSVwGhFTjrkD4zqBqO2iBoRNEctf5g6Y8pJGasZwMXuMs7QzD16uT1Dqmk8t22mUO4LCalqUgAubqkDs+oMJn4tXV953nX3gJUVStEi06mg5uv7n6xw91YDEbD8fWKAE7+MtcaG7GCbfLlEkGAp1wxGVUBvlvyvyw9wxpv0xJ/gpSfySqomj0w+w8GDFH+z5qx5FfqgrWJkb24TD1wtWmw3UB8QMTcMFkiZlyhjHayS/dUYto8o6o93nP+x18g0HbsFN/cOFBxOlqNfnLLQvOseqdlPpG0LWRQMGrlWGPv2MTw0kLj4Og15nClukfKwuICWLAGUwx265O3SXGNMZx0Ng5ExsK17PvgUuql3wdWkd1fLLFQxuNeDN0T32tPzJlpyhGw4OH4Z3Bg9nsUG8FM8j3C0quGONYbi6lPyk5CeEB5wVjW5tNCHV8kwrTcGpebYN5hPbSjRiX1eCcoRS2iUTIVGldmucsLsuGV6/UWrOS9XX8ChrspULmVjemzzMIkJEsQUxjXXJ/7zW/LMFH7xRyxJUP3SjY/em+BsQULm23dKDxsK4+dVVuQBwUrlx5wYixr65VG2ejUIj/wioLUbw=
-  - secure: hmDdEg7/xrD1QliTKL//9RGSYu7u5hOmsP0rqwMAHFJ3/Co8HyyHNla3McGjFetOcv/y4C4wjHHHQM6pQWMGmz1cGUpP2c0VfQuMgpHxY1MjgYSnCs4y0xB7dtYQgxdP88PjMY/J8frjC7756JN9eAVrHn3QlUxVl3fVhLysYyDRvGn26ZeFwA+hrDxIdtdEZMdHfgZvKy7VqD9nOw0EXGCSTgoz+b0C7lR/z9yuWQa/cj+8RMlqgAljoqnu1N18t2XWDSL8H9RywCEuIQBMFd1tjbfGCkxeK8ipAZtAtxhJZd+7ILWbC1QD0FblUOXr/QK6vnk9nDS0cnvBn51HXgpKQovjchIchDn1/tMo3dok6a31DxgcvR5vyIfZYgB9NWyeV4dccDhjxNp6zhuW6I5rvRp7YCQ79NcRmFiUiiRQ6YNdPRt0PPZvE34crUKayEpEWI51Y3jQ3N47616wOkFa1Pf2u0Dl0CeKSOf0+ma/35NTT/sjDqB37LeDYZUBcM7SlcsFxfJaOUY8UFIv0ZwNPPV08z/0I7fT2ND5bCg8S9ehlIky3Mjk4ghYiRXM1Tn3wbKW7//+ixoYaYvPKgGtbXjXTgGVMXqAWUXNTPEILfr2dQHXdDpYpiUF/Hj4E4jTep5RVipZeTUU/pSowKcyK9gq9qHR+6IgQY1ubCU=
+- if [ "$TRAVIS_BRANCH" == "develop" ]; then ssh -o "StrictHostKeyChecking no" "$DEPLOY_TEST_USER"@"$DEPLOY_TEST_HOST" TAG_TO_DEPLOY=$TAG_VERSION ENVIRONMENT_NAME=test MONGO_PASSWORD=$TEST_MONGO_PASSWORD 'bash -s' < src/main/scripts/deploy.sh; fi
+- if [ "$TRAVIS_BRANCH" == "master" ]; then ssh -o "StrictHostKeyChecking no" "$DEPLOY_PROD_USER"@"$DEPLOY_PROD_HOST" TAG_TO_DEPLOY=$TAG_VERSION ENVIRONMENT_NAME=prod MONGO_PASSWORD=$PROD_MONGO_PASSWORD 'bash -s' < src/main/scripts/deploy.sh; fi

@@ -1,8 +1,8 @@
-package com.github.pocketsquare.articles.service
+package me.potic.ingest.service
 
-import com.github.pocketsquare.articles.domain.Article
-import com.github.pocketsquare.articles.domain.Image
-import com.github.pocketsquare.articles.repository.ArticleRepository
+import me.potic.ingest.domain.Article
+import me.potic.ingest.domain.Image
+import me.potic.ingest.repository.ArticleRepository
 import groovy.json.JsonSlurper
 import groovy.util.logging.Slf4j
 import groovyx.net.http.HttpBuilder
@@ -17,8 +17,6 @@ import org.springframework.stereotype.Service
 @Slf4j
 class ArticlesIngestService {
 
-    static final String INGEST_SERVICE_URL = 'http://pocket-square-ingest:5000/'
-
     static final Integer DEFAULT_REQUEST_SIZE = 100
     static final Integer INGEST_REQUEST_SIZE = Integer.parseInt(System.getenv('ARTICLES_INGEST_REQUEST_SIZE') ?: DEFAULT_REQUEST_SIZE.toString())
 
@@ -30,11 +28,6 @@ class ArticlesIngestService {
 
     @Autowired
     JsonSlurper jsonSlurper
-
-    void deleteByUserId(String userId) {
-        articleRepository.deleteByUserId(userId)
-        log.info "successfully removed all articles of user with id=${userId} from database"
-    }
 
     DurableJob ingestArticlesByUserIdJob(String userId) {
         new DurableJob("ingest articles for user-id=${userId}") {
@@ -177,7 +170,7 @@ class ArticlesIngestService {
     }
 
     String extractSource(json) {
-        String url = json.given_url ?: json.resolved_url
+        String url = json.resolved_url ?: json.given_url
         if (url == null) {
             return null
         }

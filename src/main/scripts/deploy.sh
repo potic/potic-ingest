@@ -15,13 +15,13 @@ warn "Currently running docker images"
 docker ps -a
 
 warn "Killing currently running docker image..."
-docker kill pocket-square-articles; docker rm pocket-square-articles
+docker kill potic-ingest; docker rm potic-ingest
 
 warn "Pulling latest docker image..."
-docker pull pocketsquare/pocket-square-articles:latest
+docker pull potic/potic-ingest:$TAG_TO_DEPLOY
 
 warn "Starting docker image..."
-docker run -dit --name pocket-square-articles --link pocket-square-ingest --link pocket-square-users --link pocket-square-mongo -e MONGO_PASSWORD=$MONGO_PASSWORD -v /logs:/logs -p 28103:8080 pocketsquare/pocket-square-articles:latest
+docker run -dit --name potic-ingest --link potic-pocket-api -e LOG_PATH=/logs -v /logs:/logs -e MONGO_PASSWORD=$MONGO_PASSWORD -p 40403:8080 potic/potic-ingest:$TAG_TO_DEPLOY
 
 warn "Currently running docker images"
 docker ps -a
