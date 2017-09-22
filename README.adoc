@@ -1,4 +1,5 @@
 = potic-ingest
+:linkattrs:
 
 Service for ingesting user articles.
 
