@@ -11,10 +11,12 @@ import org.springframework.boot.SpringApplication
 import org.springframework.boot.autoconfigure.SpringBootApplication
 import org.springframework.context.annotation.Bean
 import org.springframework.context.annotation.Import
+import org.springframework.scheduling.annotation.EnableScheduling
 
 import java.util.concurrent.TimeUnit
 
 @EnableMetrics(proxyTargetClass = true)
+@EnableScheduling
 @Import(MongoDevConfiguration)
 @SpringBootApplication
 class Application {
@@ -31,7 +33,7 @@ class Application {
     @Bean
     Reporter slf4jMetricsReporter(MetricRegistry metricRegistry) {
         final Slf4jReporter reporter = Slf4jReporter.forRegistry(metricRegistry)
-                .outputTo(LoggerFactory.getLogger('me.potic.articles.metrics'))
+                .outputTo(LoggerFactory.getLogger('me.potic.ingest.metrics'))
                 .convertRatesTo(TimeUnit.SECONDS)
                 .convertDurationsTo(TimeUnit.MILLISECONDS)
                 .build()

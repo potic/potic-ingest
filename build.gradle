@@ -13,7 +13,7 @@ plugins {
 version = "${new File('VERSION').text}${project.hasProperty('patchVersion') ? '.' + patchVersion : '-SNAPSHOT'}"
 
 task wrapper(type: Wrapper) {
-    gradleVersion = '4.2'
+    gradleVersion = '4.1'
 }
 
 sourceSets {
