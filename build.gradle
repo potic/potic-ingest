@@ -61,7 +61,7 @@ dependencies {
     testCompile 'org.spockframework:spock-spring:1.1-groovy-2.4'
     testCompile 'net.bytebuddy:byte-buddy:1.6.5'
 
-    integrationTestCompile 'org.springframework.boot:spring-boot-starter-test'
+    testCompile 'org.springframework.boot:spring-boot-starter-test'
 
     integrationTestCompile 'com.stehno.ersatz:ersatz:1.4.0'
     integrationTestCompile 'io.undertow:undertow-servlet:1.4.15.Final'
