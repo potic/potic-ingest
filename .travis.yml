@@ -1,23 +1,30 @@
 sudo: required
+
 language: java
+
 services:
 - docker
+
 before_cache:
 - rm -f  $HOME/.gradle/caches/modules-2/modules-2.lock
 - rm -fr $HOME/.gradle/caches/*/plugin-resolution/
+
 cache:
   directories:
   - "$HOME/.gradle/caches/"
   - "$HOME/.gradle/wrapper/"
+
 before_install:
-- openssl aes-256-cbc -K $encrypted_38bdd7fc63cc_key -iv $encrypted_38bdd7fc63cc_iv
-  -in deployment_keys.tar.enc -out deployment_keys.tar -d
+- openssl aes-256-cbc -K $encrypted_38bdd7fc63cc_key -iv $encrypted_38bdd7fc63cc_iv -in deployment_keys.tar.enc -out deployment_keys.tar -d
 - tar xvf deployment_keys.tar
 - chmod +x gradlew
+
 install:
 - "./gradlew build jacocoTestReport --scan -PpatchVersion=$TRAVIS_BUILD_NUMBER"
+
 after_success:
 - bash <(curl -s https://codecov.io/bash)
+
 before_script:
 - docker login -e="$DOCKER_EMAIL" -u="$DOCKER_USERNAME" -p="$DOCKER_PASSWORD"
 - eval "$(ssh-agent -s)"
@@ -25,18 +32,26 @@ before_script:
 - ssh-add deployment_keys/deploy_test
 - chmod 600 deployment_keys/deploy_prod
 - ssh-add deployment_keys/deploy_prod
+
 script:
 - export DOCKER_REPO=potic/potic-ingest
-- export TAG=`if [ "$TRAVIS_BRANCH" == "master" ]; then echo "latest"; else echo $TRAVIS_BRANCH
-  | tr '/' '-' ; fi`
+- export TAG=`if [ "$TRAVIS_BRANCH" == "master" ]; then echo "latest"; else echo $TRAVIS_BRANCH | tr '/' '-' ; fi`
 - export TAG_VERSION=`cat VERSION`.$TRAVIS_BUILD_NUMBER
 - docker build -t $DOCKER_REPO:travis-$TRAVIS_BUILD_NUMBER .
 - docker tag $DOCKER_REPO:travis-$TRAVIS_BUILD_NUMBER $DOCKER_REPO:$TAG
 - docker tag $DOCKER_REPO:travis-$TRAVIS_BUILD_NUMBER $DOCKER_REPO:$TAG_VERSION
 - docker push $DOCKER_REPO
-- if [ "$TRAVIS_BRANCH" == "develop" ]; then ssh -o "StrictHostKeyChecking no" "$DEPLOY_TEST_USER"@"$DEPLOY_TEST_HOST"
-  TAG_TO_DEPLOY=$TAG_VERSION ENVIRONMENT_NAME=test MONGO_PASSWORD=$TEST_MONGO_PASSWORD
-  'bash -s' < src/main/scripts/deploy.sh; fi
-- if [ "$TRAVIS_BRANCH" == "master" ]; then ssh -o "StrictHostKeyChecking no" "$DEPLOY_PROD_USER"@"$DEPLOY_PROD_HOST"
-  TAG_TO_DEPLOY=$TAG_VERSION ENVIRONMENT_NAME=prod MONGO_PASSWORD=$PROD_MONGO_PASSWORD
-  'bash -s' < src/main/scripts/deploy.sh; fi
+- if [ "$TRAVIS_BRANCH" == "develop" ]; then ssh -o "StrictHostKeyChecking no" "$DEPLOY_TEST_USER"@"$DEPLOY_TEST_HOST" TAG_TO_DEPLOY=$TAG_VERSION ENVIRONMENT_NAME=test MONGO_PASSWORD=$TEST_MONGO_PASSWORD 'bash -s' < src/main/scripts/deploy.sh; fi
+- if [ "$TRAVIS_BRANCH" == "master" ]; then ssh -o "StrictHostKeyChecking no" "$DEPLOY_PROD_USER"@"$DEPLOY_PROD_HOST" TAG_TO_DEPLOY=$TAG_VERSION ENVIRONMENT_NAME=prod MONGO_PASSWORD=$PROD_MONGO_PASSWORD 'bash -s' < src/main/scripts/deploy.sh; fi
+
+env:
+  global:
+  - secure: PjJRWaGJEm0KDaToD4u8a8pjYyp3MkzfFEv1ndFjponLnJGOiXLhNOQdbd3hwNr7P9zzkV0FCibU34yOInknMHFW+cx7ZYNp4KAeBCJMyMN/CGdAfohtIc/CoAZlSyZXZKVw60MGmZBm8uLfNwrRlFLi/jFaWWjuhdtbNTxRqdvz2KR5em+XYC4DrpHH5PNQzKXHy/350WOyuAu1xa66CgKTn+0ufOWaWz+zsojLt3GrCgWbbqemzXL8R82S4CmOjY3HUdO9Ah91pt5UA/bJCp+ct8sY2FSxAqoiMxJvWa5CdJuo4r69gOg0JBTPzEx70x3mV49FUFW8dUr6ias8IbGva0o8It9NIBXb+VtZy8CtdNIcglgUqWvB+uLdkxqFeXmh0ZmFijPyIO1IB34m9KhImNzo8lWE87ffJ/14mRLBR0Y11bEzYkQasszJ2EwX9noK4mBE6BK+ap5csgCsqP5wQAVhz/OO2CHD7Vw4ioC6sLB4YAoJpSInorf/CrkZMINQv/KJGd2EoQtPTCShoIwsZe8EfVfajHDIiQDKeXY5KJn/0N7u3Tj7Bzp0xdndQqj/8Vx+inUQiqrdAAzQ+LlntGYKl/clyALT8IaGfkeL7mq6R3+oJ10GjPg5NJncesvG718uusdMmBsgMG+aAZKtZwuWMkpMmoceLrS9CGQ= # DOCKER_EMAIL
+  - secure: Von3EJfw6uQlWsqwFc0ZODkeVQLNZY4fQlqJjtoBJ6d4X5zwbwvWxpVjmVYJrJ64EumISBHxq7vZHgIJsBgK97vAy7qJD/xNekI5FO0hKupruszHjwy17jrOGwsLv9zbl/2IsZ4wyQ2lQ94YAp+Nhod6OW/fZXd2szaaRD0HT1KhXXhy6hZK+MGcBFnHv0+60l84edJFecCi/vyblsjAtMtyk8VP6gq/OnEqEwgqbMGcRZ+DqfeEqBJaszW64sPjzl1nRkJXBkFFNgTUYiw2RuSE/lFfwxHhvr/nMqJyUo+DJwsx1wG/7IzMfT9u+sE0vbmqTzzPeYTPLf9F7y2yup0AtceoifshEo1GrI0aUqjiIQpFbH+jM6ngg+A6ezQoNY2F9wqD37bk6Tvn55gRMtUgba/GZvV3/s1ed8bylcBpq0EAp/nMsoBhrJPs+mzhpX8/TKCzs/kHXin7Lf6vFuhQjOZvqQfeqMpphQmuXs0fuGNIAQy2TjyGnNa0Z5KPgG3QGAqVQxoLrDsRLm5Ran8/sol3o5kqNZjfV+jwEKLPFW4Mvh6bGrTopbEqhI4jtnu4h89jIYzLRE2J0drc4sbNrYP8ACEairZqAyiDJTRZRw2DHIRQOd2lTyUOY3qVylFqMNW7iObD39A3hErjBWS6Ej1IKAvJJMfpq9diyUQ= # DOCKER_USERNAME
+  - secure: DOpAUjWMtzjQTGYo8mcvCTXU+7ctEH5fAbDVDc+BDFsvnUCXwsUMXm8/mprnbh4R0GevAbeth1EjdXyS7PshTQQElMEG8RunSsb7PoFd2G8aJmoT+5BTannxaJLkc20lox4joKZGyu803RS77q5j5aDhZTHGbIh+8lBIaE8LhxpGzZoaL80Qwo8uho9h/HqrOS8WHxJ9x3qxBHYN4qIVFOVvAJWZ0orjWZnZV3/BVxcKUJsTnjdaPtggWqNVajDVdqnUrtZmCOgGG+A99N3W9arumHd35sL5605EKeI8ZymqcBMj5gVs2j+5naqSWL8WOe2sDX34TypWgNdHMEM9QJQxfPzjzsr5+mwhp62IyOuH9/kSRY+u+cigjvAs1jZvtutqLStKqN0Zdk4L8oJx/rWc44rDlauxodX+RadFT6h3k9ROjfi9LH+tOQ5MDr2R8gVyRfMrwVGUSj71KeYatxNQCsOeSmOIGg/a79UpURnIx4hnmTs9mj+w+dkuo5NEmiSBNrVTw9mZmJtN/lf1lUNAMTMo/VkhdvA5uIo92E7fHP60BUunNwswhsmIbyw4O8obSZA3h8l2undyjToQ/rbWXV9k0xYQ0UQOSXf/WeKA+zVEYfZ1h3amODC7IarmcX4s4pYehzWpepb9TYwHUC4J+0fJbX9vY1FOW5sYb74= # DOCKER_PASSWORD
+  - secure: OFWwKq9icq7LOCNMEcLQuDSqdhxmDfe9le9y3SFYnwZd8FmWqjG2sIe9ODT+oqjKMXMT1B8syEFUQBfZudfPHZ07Es2HGzBSBUpaiBdlyqkabGHf4GltpuSDcp9VJqVtdXtLIyesxWeISCZ0op0+3IEoWLOQyeCGjMeP/Ia1/LjUIdZ5sq4ggt2WJNa5mhPzf7FrZM19AWHshzuCNSBHbNfe5OJKoTtmkKIiI+8PCf+gVvXxv3YMcNoUGpVlOTbj0s8uFf9bAnAlvL01yK0TOHgKcNi11cpep34ixUSOvlCa5Xdp021GwFXImdHORYbwMzlIkr0S7IohbzyNCrEns7/GNViiwDmfw/GAvtQSXKcF/b/4YD+0D9k2hAHCWja52Pjgf4hXybydeV37ndJxbFYGRtFKsAYy6x9xrYCvjrLELhTbg39ZrDR4hZqudqCnnyW/ixhHf77MSGCoQHEU5TaAouf/zNmRAsv3jDYUewP7sPiF7wiluUuMrxANzaGA2EnbX+4JYTVpLGahugE15JNwo1ukvMlYsMQTMc2tDr7onJcLDBSAK3UxWWr2hEezAxSytsrQauf/9fhClGeYBLcjlVFU/edY+Ki5Aq9QYPlsZF4REj1mG+PxKuKi3rVyICQiVG/qJUHBTu9lLewEp1XrQIwTz5InhkdQkH0Ym4c= # DEPLOY_TEST_USER
+  - secure: jLirvSppUXCCzKLf4CsvAOWx5Gh870l5Pykd+2lk3b2k17XOlNYRNkzeib/oeITmINdZOzXFDiirupoW8YMwwoISeU+zmoeY4GPYm/FekHhCfJB9v9dbIyyKRxumMX8opxt5KUy1R5viTaaTSx9mDucD8Qo7Z+6ZVYHY45l5z3fAJzsQpoL7mSIczl1eTEhSMJsFRbuKzYlG2JdmgNHye902kFbX0huPkbMsao16rgM2IjizRmJlPtm4KDrzH3jidSb9DuOUS5S1I0sscciRhF1oTBahOWqsG1A0jV1eY3XSfKMvNtmtIVw9Ju6kmTfdhoFXO0DV2DoAB0UJlYez0E4ys6sZKUk+DdjPBj68HmS4DaHVHwbZ6nCDSTvlSC+vN8KCsWjwCA6Grl8Cb6CqwyA7K+CDGz+t4J+j8eIQUK9tWXCkUpsqUma+BAhHwF4yQDWsIkoywo/hno6JaqQ3WkRa4qNLxvq5XBBuJC9y9gkASzcWJlat5dHXeD/HjCgrxEdAOcWsRT39NC0l8mvnc5xOVrqh5VXLnBH85BFxjJ9sAOK6Cx8BeuD+he5lMhU0wHP5i7Y6UcrW4tMXLQAbAKDe4Oqy/T5yVd3Dy4Cf6ywVKnB9O6smLdmyuCyWpl0zWNlBFSuhAIAjU2szNY7dLzkP+jg8h/k/rSCLD479t5c= # DEPLOY_TEST_HOST
+  - secure: ZJ1cc3rGQnvK9MZJqO4zN6e+AYWRY5xdk1uKpWt7zf0FnVy3w4I1Vi03giXSEiHnSSDTFKih7HIVnV5vB+sC/xpgFGRfWH+7jbmLDOFbyorkPOYB7vNDfzO/rTtnmW4MCMOpzzHJ48lUhKng1guQBnAFF5iy67vzvo1NjkoppiviNJrAyrAx+/yZ3VYdnFd0eeShyztIIydm6QM7uhZLW67Jlck6yPAifT9cIdYFm2p3Cl2WLzNNvj/H2BmAKljLliNO1epSWuAqVvnBpN4sKiud7uJo7+OWdRZ+RpHD1vKTx3NjHGqX+b4MOk5U5Czyh5iQomKxH2xUupeK15so0U0y9k4PPFlpyzppl3wOH2vCa7ojzduekiCKLRQoa4mI3xToUIY9uynSCDME+xnrUQH+8s6MyNmmSx8fsAjmy2Wpmyd5WUn60AKHmeUBs/MdFkUfE06qPMedQFKaOG5sXggAELdvmXRj3hlBi8a/9hJBzqDGf69PRa3Rvyy0ovPJTm87mmjn8UQ598ZJQJ68qrr+zx5PQVV4KdvmXK+zuzGgZ55Pz2iGIU5edCk58CwNZ36daf388wYHOKijZKGSy8X4SDglK0qU6iuhhImqh7AZ6UU91ow0aZH91gIMCuFf4V6557GriR3Xwed9GeeXr2LVAVUZ5OdjA4OVb2lahXc= # DEPLOY_PROD_USER
+  - secure: q5CCchHgrjYvExa2GjOhWlfGEGIZPUy+T2+rZI7GrMUl0ISKToOirlSV9zOcuxibYpIXzjPsJChvtgL+sInEREeXB0zlOUx5hV/dL0DUQ9+SmxRXPyAELsR6jwh4jWZ245p6omMQuXbZNg5Iz8/tNZPpTJcNwFuyKk4A6PUWMjkNBFMcgcHiPOBfwo+LZFKQu+d4TYhyKXHTef4r+nrFRN7ptYAkNk5Tx1x3tHnMnuVmLRQeezaIGcdoRzQTVnSyulTmnay3AULOIU61r7No2XjQFZji7AJJwePZdNsqmfad6P/2lLvqVMHdoVmKerEI0k249Yvu/2TRH35ABJIEFU2ivnD1VWUJXz5rQj69AftkiblfI3pTDW4sdIceVC2ihpLcSFRZygMQuE2ROn5g32pTWvJTLrmTOGHcX9rjRT07ZRJtLJTv7d0HHh8niAkHCFKbXgAj+N+6t0OthSMD/kePnW8gBeujpTvv8DXmsJo/U0ix10p9pwmZGZN9mIvs//Y7tT+hySpkKOz7gLwb41hKL3rqiK4OUeSgYAmiYlE5OXbl+JQDiYhx6ywMm4nm2v2KupjYrGvFyulsU8ytIMrlnU+nX+0HUuTE38V3Nt8SfivND9bay4JCXUg1tXwUcksVfjUKzyqOuW2NoKytU3XWHrvViURVy43yBwZGHEE= # DEPLOY_PROD_HOST
+  - secure: PM5kD8nKjUom8ydyo7j8ij0qnP7mbUEXQWIfheWfklh8YiB2jQsb8AugulEorh96dZ5P6doruI4N0OnW6bADOzz5GL6Ofqbu7/hk4vU2T9NTe1KGQYa0SjAS8bMOG9zOLNv4RltO8CjoLlUWfG6WNxZpt6bEHVskl0+kURmoaehZsK0Vz1C4tHR9mQVicCGrSmFszUqf9K6RXD/PLiATxGujL+REI61nfRfTUX/QUbZe086SJgOtnguv48EFOQmrgriypGPTni7V3dqt63AE1nLqN0+X0cdZaMo3UXdp075bIl94sR9QJZKpLF5k/jGi8lICYKQ4CR+wGSLYP721XlWLeXgjK03lmoS5HIIB4x7OsBbjl4rMvxfNM09dfuCvaYEPcKxRqAMhEMb22TRLT1QbUGVjhJM9LKJLqYhtTkYv8jPdpXfa4WywbRNowBasIDVTk5x3ApT72JlWXJTJbEz7YdsaZo9l25P0+8TtU9TQcG1gBNg0XuQN/hStTl/o8Uw8YuxMOSS25gisdv5it+P3QfW4j4AG/+eZ3CXzvU834z6osRfjcysMlUxjwfMM9u0aNUeYApHM3cq4mMpmxNyOlq6XFhvA8omWEfZGCJOTqZcQgutOh6SqN0n+Im3rVpQrpS16xeWvceS7frpLoW9/Y7Az6YS5FMttEnbm8ZI= # TEST_MONGO_PASSWORD
+  - secure: l4Ih4UQeKpGdxhPLQVG0FpGKMGYWmDA06reInxGB1Ccn9hjOr5RBvNvwRmq/QScpr0764yQuM3qaqxwQhBdGmdHJ0AQ2CKyyGQVoRL4BXon4ABwQ8m7xVkJ8yPA89P0yfGeKP5rkpjpzkp3PNQF7rEp6WFAErLmcXuwAeRCx6sBToyGt81Q2rZ+TomvyceIy4gVbm1iD7ufjEj0mgsr2hZPwt4aTfjrUc6sV4dTDBK1jcoJbyD+GgMlssBYvC8y585YBH0l22a+Q7OU6JnCJqy/OmjzH0rh7Up7Zfzmhw/GGRq1L60jXIDt6KidRdIg9U06UXh3NvSiL8fw76NOaIQKxyrbn7AykWBBCgXH4hp0RaPA7MAJ7xDVyFw6MOfdZ6sNVrsmF1UYelBec4D2yh5qnKTV0Wa3/BIJY55ZrKWFNKgHq+ZVR+iTRh3oahCu4Wo6qWO0C56a8uN39FeDObb3DBnvVygF5uk5I/YeojVNEJHIDohhgCkvaHNguvmFKuhAE2VMQtm/QWauOZiECL6wXyTWOAHWv6Y1h3fRTslWWsaMfP7thXlJRxIEE+v7JOAHtvHe5b2K1dGgRnW5n+yswH0pl/GwRsZMnJe4z9yZvuDwRq688+vppmukKoTNWDRwIjgl2efJz700dNCsNur7pWSw0HsrmxJQ69rS6pCE= # PROD_MONGO_PASSWORD
