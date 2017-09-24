@@ -1,8 +1,7 @@
-package com.github.pocketsquare.articles.domain
+package me.potic.ingest.domain
 
 import groovy.transform.builder.Builder
 import org.springframework.data.annotation.Id
-import org.springframework.data.mongodb.core.index.Indexed
 
 @Builder
 class Article {
@@ -10,10 +9,7 @@ class Article {
     @Id
     String id
 
-    @Indexed
     String pocketId
-
-    @Indexed
     String userId
 
     String givenUrl

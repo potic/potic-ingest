@@ -11,19 +11,19 @@ appender('STDOUT', ConsoleAppender) {
 }
 
 appender('FILE', RollingFileAppender) {
-    file = '/logs/pocket-square-articles.log'
+    file = "${System.getenv('LOG_PATH') ?: 'logs'}/potic-ingest.log"
 
     encoder(PatternLayoutEncoder) {
         pattern = '%d{HH:mm:ss.SSS} [%thread] %-5level %logger{36} - %msg%n'
     }
 
     rollingPolicy(TimeBasedRollingPolicy) {
-        FileNamePattern = "/logs/pocket-square-articles.%d{yyyy-MM-dd}.log"
+        FileNamePattern = "${System.getenv('LOG_PATH') ?: 'logs'}/potic-ingest.%d{yyyy-MM-dd}.log"
     }
 }
 
-String POCKET_SQUARE_LOG_LEVEL = System.getenv('POCKET_SQUARE_LOG_LEVEL') ?: 'INFO'
+String SERVICE_LOG_LEVEL = System.getenv('SERVICE_LOG_LEVEL') ?: 'INFO'
 String ROOT_LOG_LEVEL = System.getenv('ROOT_LOG_LEVEL') ?: 'INFO'
 
 root(Level.toLevel(ROOT_LOG_LEVEL), ['STDOUT', 'FILE' ])
-logger('com.github.pocketsquare', Level.toLevel(POCKET_SQUARE_LOG_LEVEL), [ 'STDOUT', 'FILE' ], false)
+logger('me.potic.ingest', Level.toLevel(SERVICE_LOG_LEVEL), [ 'STDOUT', 'FILE' ], false)

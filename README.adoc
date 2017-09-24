@@ -1,25 +1,24 @@
-= pocket-square-articles
+= potic-ingest
+:linkattrs:
 
-Service for managing user articles.
+Service for ingesting user articles.
 
 == Travis job
 
-image:https://travis-ci.org/pocket-square/pocket-square-articles.svg?branch=develop["Travis job", link="https://travis-ci.org/pocket-square/pocket-square-articles"]
+image:https://travis-ci.org/potic/potic-ingest.svg?branch=develop["Travis job", link="https://travis-ci.org/potic/potic-ingest"]
 
 == Code coverage
 
-image:https://codecov.io/gh/pocket-square/pocket-square-articles/branch/develop/graph/badge.svg["Code coverage", link="https://codecov.io/gh/pocket-square/pocket-square-articles"]
+image:https://codecov.io/gh/potic/potic-ingest/branch/develop/graph/badge.svg["Code coverage", link="https://codecov.io/gh/potic/potic-ingest"]
 
 == Docker repository
 
-https://hub.docker.com/r/pocketsquare/pocket-square-articles/
+https://hub.docker.com/r/potic/potic-ingest/
 
 == Documentation
 
-link:src/main/scripts/deploy[HOWTO: start service as docker container]
-
-link:src/docs/howto-run-service.adoc[HOWTO: run service]
-
-link:src/docs/mongodb-setup.adoc[MongoDB setup]
+link:src/main/scripts/deploy.sh[HOWTO: start service as docker container, window="_blank"]
 
 link:src/docs/configuration-parameters.adoc[Service configuration parameters]
+
+link:src/docs/environments.adoc[Environments]

@@ -1,24 +1,6 @@
 = Configuration parameters
 
-ARTICLES_INGEST_REQUEST_SIZE - number of records requested from ingest service at once
-
-ARTICLES_INGEST_SUSPEND_DURATION - duration of job pause after all articles are loaded
-
-INGEST_JOB_KEEPER_SUSPEND_DURATION - duration of job pause after all users ingest jobs are checked
-
-MONGO_DATABASE_NAME - mongodb database name to use (default is pocketSquare)
-
-MONGO_AUTH_DATABASE_NAME - mongodb database name used for authentication (default is admin)
-
-MONGO_HOST - host of mongodb instance (default is pocket-square-mongo)
-
-MONGO_PORT - port of mongodb instance (default is 27017)
-
-MONGO_USERNAME - username for authentication to mongodb (default is articlesService)
-
-MONGO_PASSWORD - password for authentication to mongodb
-
 ROOT_LOG_LEVEL - logging level for third-party libraries (default is INFO)
 
-POCKET_SQUARE_LOG_LEVEL - logging level for service code (default is INFO)
+SERVICE_LOG_LEVEL - logging level for service code (default is INFO)
 

@@ -1,13 +1,17 @@
-# Intellij
+# Intellij #
 .idea/
 out/
 *.iml
 *.iws
 *.ipr
 
-# Mac
+# Mac #
 .DS_Store
 
-# Gradle
+# Gradle #
 build/
 .gradle/
+
+# Development environment #
+logs/
+mongodb-dev.properties
