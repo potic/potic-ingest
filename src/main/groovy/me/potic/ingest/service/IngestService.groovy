@@ -3,6 +3,7 @@ package me.potic.ingest.service
 import com.codahale.metrics.annotation.Timed
 import groovy.util.logging.Slf4j
 import me.potic.ingest.domain.Article
+import me.potic.ingest.domain.User
 import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.beans.factory.annotation.Value
 import org.springframework.scheduling.annotation.Scheduled
@@ -31,16 +32,16 @@ class IngestService {
     void ingestNewArticles() {
         log.info("ingesting new articles...")
 
-        userService.allUsersIds().forEach { String userId ->
-            long ingestSince = userArticlesIngestedTill.getOrDefault(userId, 0)
-            Collection<Article> ingestedArticles = pocketApiService.getArticlesByUserId(userId, ingestRequestSize, ingestSince)
+        userService.allUsers().forEach { User user ->
+            long ingestSince = userArticlesIngestedTill.getOrDefault(user.id, 0)
+            Collection<Article> ingestedArticles = pocketApiService.getArticlesByUser(user, ingestRequestSize, ingestSince)
 
             articlesService.upsertArticles(ingestedArticles)
             articlesService.downloadContent(ingestedArticles)
 
             if (!ingestedArticles.empty) {
                 long ingestedTill = ingestedArticles.collect({ Article article -> article.timeUpdated }).max()
-                userArticlesIngestedTill.put(userId, ingestedTill)
+                userArticlesIngestedTill.put(user.id, ingestedTill)
             }
         }
     }

@@ -7,6 +7,7 @@ import groovyx.net.http.HttpBuilder
 import me.potic.ingest.domain.Article
 import me.potic.ingest.domain.Image
 import org.jsoup.nodes.Document
+import me.potic.ingest.domain.User
 import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.beans.factory.annotation.Value
 import org.springframework.stereotype.Service
@@ -28,19 +29,19 @@ class PocketApiService {
     }
 
     @Timed(name = 'getArticlesByUserId')
-    Collection<Article> getArticlesByUserId(String userId, long count, long since) {
-        log.info "requesting ${count} articles for user with id=${userId} since ${since}"
+    Collection<Article> getArticlesByUser(User user, long count, long since) {
+        log.info "requesting ${count} articles for user with id=${user.id} since ${since}"
 
         def response = pocketApiRest.get {
-            request.uri.path = "/get/${userId}"
+            request.uri.path = "/get/${user.pocketAccessToken}"
             request.uri.query = [ count: count, since: since ]
         }
 
-        def jsonResponse = toJson(response)
+        Map jsonResponse = toJson(response)
 
         Collection<Article> articles = jsonResponse.values().collect({
             Article.builder()
-                    .userId(userId)
+                    .userId(user.id)
                     .pocketId(it.resolved_id)
                     .givenUrl(it.given_url)
                     .resolvedUrl(it.resolved_url)
@@ -60,7 +61,7 @@ class PocketApiService {
                     .build()
         })
 
-        log.info "received ${articles.size()} articles for user with id=${userId} since ${since}"
+        log.info "received ${articles.size()} articles for user with id=${user.id} since ${since}"
         return articles
     }
 
