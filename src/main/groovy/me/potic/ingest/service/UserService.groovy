@@ -3,6 +3,7 @@ package me.potic.ingest.service
 import com.codahale.metrics.annotation.Timed
 import groovy.util.logging.Slf4j
 import groovyx.net.http.HttpBuilder
+import me.potic.ingest.domain.User
 import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.beans.factory.annotation.Value
 import org.springframework.stereotype.Service
@@ -20,17 +21,18 @@ class UserService {
         }
     }
 
-    @Timed(name = 'allUsersIds')
-    Collection<String> allUsersIds() {
-        log.info 'fetching all users ids'
+    @Timed(name = 'allUsers')
+    Collection<User> allUsers() {
+        log.info 'fetching all users'
 
         try {
-            return usersServiceRest.get {
-                request.uri.path = '/users/ids'
+            Collection response = usersServiceRest.get {
+                request.uri.path = '/user'
             }
+            return response.collect { new User(it) }
         } catch (e) {
-            log.error "fetching all users ids failed: $e.message", e
-            throw new RuntimeException('fetching all users ids failed', e)
+            log.error "fetching all users failed: $e.message", e
+            throw new RuntimeException('fetching all users failed', e)
         }
     }
 }
