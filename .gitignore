@@ -14,4 +14,3 @@ build/
 
 # Development environment #
 logs/
-mongodb-dev.properties
