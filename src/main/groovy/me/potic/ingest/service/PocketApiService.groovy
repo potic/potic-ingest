@@ -1,12 +1,10 @@
 package me.potic.ingest.service
 
 import com.codahale.metrics.annotation.Timed
-import groovy.json.JsonSlurper
 import groovy.util.logging.Slf4j
 import groovyx.net.http.HttpBuilder
 import me.potic.ingest.domain.Article
 import me.potic.ingest.domain.Image
-import org.jsoup.nodes.Document
 import me.potic.ingest.domain.User
 import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.beans.factory.annotation.Value
@@ -19,9 +17,6 @@ class PocketApiService {
     HttpBuilder pocketApiRest
 
     @Autowired
-    JsonSlurper jsonSlurper
-
-    @Autowired
     HttpBuilder pocketApiRest(@Value('${services.pocketApi.url}') String pocketApiServiceUrl) {
         pocketApiRest = HttpBuilder.configure {
             request.uri = pocketApiServiceUrl
@@ -32,14 +27,12 @@ class PocketApiService {
     Collection<Article> getArticlesByUser(User user, long count, long since) {
         log.info "requesting ${count} articles for user with id=${user.id} since ${since}"
 
-        def response = pocketApiRest.get {
+        Map response = pocketApiRest.get(Map) {
             request.uri.path = "/get/${user.pocketAccessToken}"
             request.uri.query = [ count: count, since: since ]
         }
 
-        Map jsonResponse = toJson(response)
-
-        Collection<Article> articles = jsonResponse.values().collect({
+        Collection<Article> articles = response.values().collect({
             Article.builder()
                     .userId(user.id)
                     .pocketId(it.resolved_id)
@@ -63,17 +56,6 @@ class PocketApiService {
 
         log.info "received ${articles.size()} articles for user with id=${user.id} since ${since}"
         return articles
-    }
-
-    def toJson(def response) {
-        // temporary fix as response is jsoup document for some reason
-        String responseAsString = (response as Document).body().html()
-
-        // temporary fix as these substrings break json parsing
-        responseAsString = responseAsString.replace("<script src=\"\\&quot;https://d3js.org/d3.v4.js\\&quot;\"></script>", "")
-        responseAsString = responseAsString.replace("<script src=\"\\&quot;https://unpkg.com/d3-horizon-chart\\&quot;\"></script>", "")
-
-        return jsonSlurper.parseText(responseAsString)
     }
 
     static Image extractMainImage(json) {
