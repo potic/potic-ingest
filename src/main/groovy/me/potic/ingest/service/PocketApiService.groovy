@@ -1,7 +1,6 @@
 package me.potic.ingest.service
 
 import com.codahale.metrics.annotation.Timed
-import groovy.json.JsonSlurper
 import groovy.util.logging.Slf4j
 import groovyx.net.http.HttpBuilder
 import me.potic.ingest.domain.User
@@ -14,9 +13,6 @@ import org.springframework.stereotype.Service
 class PocketApiService {
 
     HttpBuilder pocketApiRest
-
-    @Autowired
-    JsonSlurper jsonSlurper
 
     @Autowired
     HttpBuilder pocketApiRest(@Value('${services.pocketApi.url}') String pocketApiServiceUrl) {
