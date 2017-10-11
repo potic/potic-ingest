@@ -26,7 +26,7 @@ class ArticlesService {
 
         ingestedArticles.each { Map article ->
             articlesServiceRest.post {
-                request.uri.path = "/user/${userId}/article/upsert/pocket"
+                request.uri.path = "/user/${userId}/article/fromPocket"
                 request.body = article
                 request.contentType = 'application/json'
             }
