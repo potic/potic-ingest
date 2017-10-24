@@ -1,12 +1,10 @@
 package me.potic.ingest.domain
 
 import groovy.transform.builder.Builder
-import org.springframework.data.annotation.Id
 
 @Builder
 class Article {
 
-    @Id
     String id
 
     String pocketId
