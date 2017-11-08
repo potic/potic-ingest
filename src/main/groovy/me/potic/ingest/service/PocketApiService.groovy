@@ -6,6 +6,7 @@ import groovyx.net.http.HttpBuilder
 import me.potic.ingest.domain.PocketArticle
 import me.potic.ingest.domain.PocketAuthor
 import me.potic.ingest.domain.PocketImage
+import me.potic.ingest.domain.PocketTag
 import me.potic.ingest.domain.PocketVideo
 import me.potic.ingest.domain.User
 import org.springframework.beans.factory.annotation.Autowired
@@ -48,6 +49,8 @@ class PocketApiService {
             if (eachResponse.authors != null) eachResponse.authors = eachResponse.authors.values().collect({ new PocketAuthor(it) })
 
             if (eachResponse.videos != null) eachResponse.videos = eachResponse.videos.values().collect({ new PocketVideo(it) })
+
+            if (eachResponse.tags != null) eachResponse.tags = eachResponse.tags.values().collect({ new PocketTag(it) })
 
             new PocketArticle(eachResponse)
         })

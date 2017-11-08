@@ -4,7 +4,7 @@ import groovy.transform.EqualsAndHashCode
 import groovy.transform.ToString
 
 @EqualsAndHashCode
-@ToString
+@ToString(includeNames = true)
 class PocketArticle {
 
     String item_id
@@ -39,6 +39,8 @@ class PocketArticle {
 
     String has_video
     List<PocketVideo> videos
+
+    List<PocketTag> tags
 
     String is_index
 }

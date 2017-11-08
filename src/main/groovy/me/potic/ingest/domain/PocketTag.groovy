@@ -5,12 +5,8 @@ import groovy.transform.ToString
 
 @EqualsAndHashCode
 @ToString(includeNames = true)
-class PocketAuthor {
+class PocketTag {
 
-    String author_id
     String item_id
-
-    String name
-
-    String url
+    String tag
 }

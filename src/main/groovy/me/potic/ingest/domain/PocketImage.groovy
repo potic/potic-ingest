@@ -4,7 +4,7 @@ import groovy.transform.EqualsAndHashCode
 import groovy.transform.ToString
 
 @EqualsAndHashCode
-@ToString
+@ToString(includeNames = true)
 class PocketImage {
 
     String image_id
