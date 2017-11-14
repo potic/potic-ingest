@@ -23,7 +23,7 @@ class ArticlesService {
 
     @Timed(name = 'upsertArticles')
     void upsertArticles(String userId, Collection<PocketArticle> ingestedArticles) {
-        log.info "upserting ${ingestedArticles.size()} articles for user #${userId}..."
+        log.debug "upserting ${ingestedArticles.size()} articles for user #${userId}..."
 
         ingestedArticles.each { PocketArticle article ->
             articlesServiceRest.post {

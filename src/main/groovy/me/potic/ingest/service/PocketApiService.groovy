@@ -28,7 +28,7 @@ class PocketApiService {
 
     @Timed(name = 'ingestArticlesByUser')
     Collection<PocketArticle> ingestArticlesByUser(User user, long count, long since) {
-        log.info "requesting ${count} articles for user with id=${user.id} since ${since}"
+        log.debug "requesting ${count} articles for user with id=${user.id} since ${since}"
 
         Map response = pocketApiRest.get(Map) {
             request.uri.path = "/get/${user.pocketAccessToken}"
@@ -55,7 +55,7 @@ class PocketApiService {
             new PocketArticle(eachResponse)
         })
 
-        log.info "received ${ingestedArticles.size()} articles for user with id=${user.id} since ${since}"
+        log.debug "received ${ingestedArticles.size()} articles for user with id=${user.id} since ${since}"
         return ingestedArticles
     }
 }
