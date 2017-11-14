@@ -23,7 +23,7 @@ class UserService {
 
     @Timed(name = 'allUsers')
     Collection<User> allUsers() {
-        log.info 'fetching all users'
+        log.debug 'fetching all users'
 
         try {
             Collection response = usersServiceRest.get {

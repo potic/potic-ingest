@@ -3,13 +3,14 @@ package me.potic.ingest.domain
 import groovy.transform.EqualsAndHashCode
 import groovy.transform.ToString
 
-@ToString(includes = [ 'id' ])
 @EqualsAndHashCode
-class User {
+@ToString(includeNames = true)
+class PocketAuthor {
 
-    String id
+    String author_id
+    String item_id
 
-    Collection<String> socialIds
+    String name
 
-    String pocketAccessToken
+    String url
 }

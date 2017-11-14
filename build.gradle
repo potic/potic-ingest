@@ -3,7 +3,7 @@ plugins {
 
     id 'groovy'
 
-    id 'org.springframework.boot' version '1.5.7.RELEASE'
+    id 'org.springframework.boot' version '1.5.8.RELEASE'
 
     id 'jacoco'
 
@@ -13,7 +13,7 @@ plugins {
 version = "${new File('VERSION').text}${project.hasProperty('patchVersion') ? '.' + patchVersion : '-SNAPSHOT'}"
 
 task wrapper(type: Wrapper) {
-    gradleVersion = '4.2.1'
+    gradleVersion = '4.3.1'
 }
 
 sourceSets {
@@ -43,7 +43,7 @@ dependencies {
     compile 'org.springframework.boot:spring-boot-starter-web'
     compile 'org.springframework.boot:spring-boot-starter-actuator'
 
-    compile 'io.github.http-builder-ng:http-builder-ng-core:1.0.0'
+    compile 'io.github.http-builder-ng:http-builder-ng-core:1.0.2'
 
     compile 'org.slf4j:slf4j-api'
     compile 'ch.qos.logback:logback-classic'
