@@ -14,3 +14,4 @@ build/
 
 # Development environment #
 logs/
+logzio-dev.properties
