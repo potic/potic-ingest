@@ -14,6 +14,7 @@ class PocketVideo {
 
     String height
     String width
+    String length
 
     String vid
     String type
