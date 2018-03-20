@@ -32,6 +32,7 @@ class PocketArticle {
     Long word_count
 
     String has_image
+    String top_image_url
     PocketImage image
     List<PocketImage> images
 
